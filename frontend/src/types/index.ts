@@ -14,7 +14,7 @@ export interface User {
   updatedAt: string;
 }
 
-export type UserRole = 'admin' | 'user' | 'staff';
+export type UserRole = 'admin' | 'citizen' | 'staff' | 'volunteer';
 
 // Authentication types
 export interface AuthState {
@@ -27,12 +27,29 @@ export interface AuthState {
 export interface LoginCredentials {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface RegisterData {
   email: string;
   password: string;
-  name: string;
+  confirmPassword: string;
+  fullName: string;
+  phone?: string;
+  role: UserRole;
+}
+
+export interface VerificationData {
+  email: string;
+  code: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  user?: User;
+  token?: string;
+  message?: string;
+  requiresVerification?: boolean;
 }
 
 // Theme types

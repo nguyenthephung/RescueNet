@@ -3,37 +3,38 @@
 
 @import "tailwindcss";
 
-/* Root variables for theming */
+/* Root variables for theming - RescueNet Emergency Theme */
 :root {
-  /* Light mode colors */
-  --background: 255 255 255;
-  --foreground: 10 10 10;
-  --card: 255 255 255;
-  --card-foreground: 10 10 10;
-  --muted: 245 245 245;
-  --muted-foreground: 115 115 115;
-  --border: 229 229 229;
-  --input: 229 229 229;
-  --ring: 14 165 233;
+  /* Light mode - Warm emergency tone với subtle red/orange tint */
+  --background: 254 252 250;        /* Warm off-white with slight orange tint */
+  --foreground: 23 23 23;
+  --card: 255 254 253;              /* Subtle warm white for cards */
+  --card-foreground: 23 23 23;
+  --muted: 254 243 239;             /* Light peach/orange muted */
+  --muted-foreground: 100 116 139;
+  --border: 254 226 220;            /* Subtle red-orange border */
+  --input: 254 226 220;
+  --ring: 220 38 38;                /* Emergency red focus ring */
   
-  /* Status colors */
-  --success: 34 197 94;
-  --warning: 245 158 11;
-  --error: 239 68 68;
-  --info: 59 130 246;
+  /* Status colors - Emergency optimized */
+  --success: 22 163 74;             /* Rescue complete - green */
+  --warning: 234 88 12;             /* Alert - high visibility orange */
+  --error: 220 38 38;               /* Critical - emergency red */
+  --info: 37 99 235;                /* Information - medical blue */
+  --accent: 202 138 4;              /* High visibility yellow */
 }
 
 .dark {
-  /* Dark mode colors */
-  --background: 10 10 10;
-  --foreground: 250 250 250;
-  --card: 23 23 23;
-  --card-foreground: 250 250 250;
-  --muted: 38 38 38;
-  --muted-foreground: 163 163 163;
-  --border: 38 38 38;
-  --input: 38 38 38;
-  --ring: 14 165 233;
+  /* Dark mode - Cool emergency tone với subtle blue tint */
+  --background: 15 20 25;           /* Deep blue-black for emergency ops */
+  --foreground: 248 250 252;
+  --card: 23 30 38;                 /* Darker blue-tinted card */
+  --card-foreground: 248 250 252;
+  --muted: 30 41 59;                /* Blue-gray muted */
+  --muted-foreground: 148 163 184;
+  --border: 45 55 72;               /* Cooler border */
+  --input: 45 55 72;
+  --ring: 239 68 68;                /* Brighter red for dark mode */
 }
 
 /* Base styles */
@@ -100,17 +101,19 @@ h6 {
 }
 
 
-/* Component styles */
+/* Component styles - Emergency optimized */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 200ms;
   outline: none;
+  letter-spacing: 0.025em;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .btn:focus-visible {
@@ -124,64 +127,74 @@ h6 {
 }
 
 .btn-primary {
-  background-color: rgb(14 165 233);
+  background-color: rgb(220 38 38);
   color: white;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 .btn-primary:hover {
-  background-color: rgb(2 132 199);
+  background-color: rgb(185 28 28);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
-  background-color: rgb(3 105 161);
+  background-color: rgb(153 27 27);
+  transform: translateY(0);
 }
 
 .dark .btn-primary {
-  background-color: rgb(14 165 233);
+  background-color: rgb(239 68 68);
 }
 
 .dark .btn-primary:hover {
-  background-color: rgb(2 132 199);
+  background-color: rgb(220 38 38);
 }
 
 .btn-secondary {
-  background-color: rgb(168 85 247);
+  background-color: rgb(37 99 235);
   color: white;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 .btn-secondary:hover {
-  background-color: rgb(147 51 234);
+  background-color: rgb(29 78 216);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
 }
 
 .btn-secondary:active {
-  background-color: rgb(126 34 206);
+  background-color: rgb(30 64 175);
+  transform: translateY(0);
 }
 
 .dark .btn-secondary {
-  background-color: rgb(168 85 247);
+  background-color: rgb(59 130 246);
 }
 
 .dark .btn-secondary:hover {
-  background-color: rgb(147 51 234);
+  background-color: rgb(37 99 235);
 }
 
 .btn-outline {
-  border: 1px solid rgb(212 212 212);
+  border: 2px solid rgb(226 232 240);
   background-color: transparent;
-  color: rgb(23 23 23);
+  color: rgb(15 23 42);
 }
 
 .btn-outline:hover {
-  background-color: rgb(245 245 245);
+  background-color: rgb(241 245 249);
+  border-color: rgb(203 213 225);
 }
 
 .dark .btn-outline {
-  border-color: rgb(64 64 64);
-  color: rgb(250 250 250);
+  border-color: rgb(71 85 105);
+  color: rgb(248 250 252);
 }
 
 .dark .btn-outline:hover {
-  background-color: rgb(38 38 38);
+  background-color: rgb(51 65 85);
+  border-color: rgb(100 116 139);
 }
 
 .btn-ghost {
@@ -189,37 +202,46 @@ h6 {
 }
 
 .btn-ghost:hover {
-  background-color: rgb(245 245 245);
+  background-color: rgb(241 245 249);
 }
 
 .dark .btn-ghost:hover {
-  background-color: rgb(38 38 38);
+  background-color: rgb(51 65 85);
 }
 
 .btn-danger {
-  background-color: rgb(239 68 68);
+  background-color: rgb(220 38 38);
   color: white;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 .btn-danger:hover {
-  background-color: rgb(220 38 38);
+  background-color: rgb(185 28 28);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
 }
 
 .btn-danger:active {
-  background-color: rgb(185 28 28);
+  background-color: rgb(153 27 27);
+  transform: translateY(0);
 }
 
-/* Card component */
+/* Card component - Enhanced for rescue context */
 .card {
   border-radius: 0.75rem;
-  border: 1px solid rgb(229 229 229);
+  border: 1px solid rgb(226 232 240);
   background-color: rgb(var(--card));
   padding: 1.5rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: all 200ms;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .dark .card {
-  border-color: rgb(38 38 38);
+  border-color: rgb(51 65 85);
   background-color: rgb(var(--card));
 }
 
@@ -300,55 +322,65 @@ h6 {
   }
 }
 
-/* Badge */
+/* Badge - Emergency status indicators */
 .badge {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  padding: 0.125rem 0.625rem;
+  padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.025em;
   transition: colors 200ms;
+  text-transform: uppercase;
 }
 
 .badge-primary {
-  background-color: rgb(224 242 254);
-  color: rgb(7 89 133);
+  background-color: rgb(254 226 226);
+  color: rgb(153 27 27);
+  border: 1px solid rgb(254 202 202);
 }
 
 .dark .badge-primary {
-  background-color: rgb(12 74 110);
-  color: rgb(186 230 253);
+  background-color: rgb(127 29 29);
+  color: rgb(254 202 202);
+  border: 1px solid rgb(185 28 28);
 }
 
 .badge-success {
   background-color: rgb(220 252 231);
-  color: rgb(22 101 52);
+  color: rgb(21 128 61);
+  border: 1px solid rgb(187 247 208);
 }
 
 .dark .badge-success {
   background-color: rgb(20 83 45);
   color: rgb(187 247 208);
+  border: 1px solid rgb(22 163 74);
 }
 
 .badge-warning {
-  background-color: rgb(254 243 199);
-  color: rgb(146 64 14);
+  background-color: rgb(255 237 213);
+  color: rgb(154 52 18);
+  border: 1px solid rgb(253 186 116);
 }
 
 .dark .badge-warning {
-  background-color: rgb(120 53 15);
-  color: rgb(253 230 138);
+  background-color: rgb(124 45 18);
+  color: rgb(253 186 116);
+  border: 1px solid rgb(234 88 12);
 }
 
 .badge-error {
   background-color: rgb(254 226 226);
   color: rgb(153 27 27);
+  border: 1px solid rgb(254 202 202);
 }
 
 .dark .badge-error {
   background-color: rgb(127 29 29);
   color: rgb(254 202 202);
+  border: 1px solid rgb(220 38 38);
 }
 
 
