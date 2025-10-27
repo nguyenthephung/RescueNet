@@ -47,7 +47,7 @@ export function SOSButton({ onSend, disabled }: SOSButtonProps) {
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
-        {!isCountingDown ? (
+        {!isCountingDown && !isLoading ? (
           <motion.div
             key="sos-button"
             initial={{ scale: 0.95, opacity: 0 }}
@@ -133,7 +133,7 @@ export function SOSButton({ onSend, disabled }: SOSButtonProps) {
       </AnimatePresence>
 
       <AnimatePresence>
-        {isCountingDown && (
+        {(isCountingDown || isLoading) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -144,7 +144,8 @@ export function SOSButton({ onSend, disabled }: SOSButtonProps) {
             <Button
               variant="outline"
               onClick={handleCancel}
-              className="w-full py-6 text-lg font-semibold border-2 border-error-600 text-error-600 hover:bg-error-50"
+              disabled={isLoading}
+              className={`w-full py-6 text-lg font-semibold border-2 border-error-600 text-error-600 hover:bg-error-50 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {t('sos.cancelButton')}
             </Button>
@@ -154,15 +155,18 @@ export function SOSButton({ onSend, disabled }: SOSButtonProps) {
 
       {isLoading && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
-          <Alert variant="info">
-            <AlertTitle className="flex items-center gap-3">
+          <Alert variant="info" className="bg-secondary-50 border-secondary-500">
+            <AlertTitle className="flex items-center gap-3 mb-2">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 className="w-5 h-5 border-3 border-secondary-600 border-t-transparent rounded-full"
               />
-              {t('sos.sending')}
+              <span className="font-bold text-secondary-900">{t('sos.sending')}</span>
             </AlertTitle>
+            <AlertDescription className="text-sm text-secondary-700">
+              📍 {t('sos.sendingLocation') || 'Vị trí của bạn đang được gửi đến đội cứu hộ. Vui lòng giữ kết nối mạng và GPS.'}
+            </AlertDescription>
           </Alert>
         </motion.div>
       )}

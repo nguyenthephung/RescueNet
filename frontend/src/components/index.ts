@@ -8,6 +8,7 @@ export { Card } from './Card';
 export { Input } from './Input';
 export { LanguageSelector } from './LanguageSelector';
 export { Tooltip, InfoTooltip } from './Tooltip';
+export { EmergencyMap } from './EmergencyMap';
 
 // Layout components
 export { Header, Footer } from './layout';

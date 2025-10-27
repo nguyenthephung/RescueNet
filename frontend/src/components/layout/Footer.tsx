@@ -6,11 +6,10 @@
 'use client';
 
 import { useLanguageRedux } from '@/hooks/useLanguageRedux';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export function Footer() {
   const { t } = useLanguageRedux();
-  const router = useRouter();
   const currentYear = new Date().getFullYear();
 
   const supportLinks = [
@@ -58,7 +57,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-neutral-900 text-neutral-300 mt-20">
+    <footer className="bg-neutral-900 text-neutral-300 mt-20" suppressHydrationWarning>
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
@@ -95,12 +94,12 @@ export function Footer() {
             <ul className="space-y-2">
               {supportLinks.map((link) => (
                 <li key={link.href}>
-                  <button
-                    onClick={() => router.push(link.href)}
-                    className="text-sm text-neutral-400 hover:text-white transition-colors"
+                  <Link
+                    href={link.href}
+                    className="text-sm text-neutral-400 hover:text-white transition-colors block"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -114,12 +113,12 @@ export function Footer() {
             <ul className="space-y-2">
               {legalLinks.map((link) => (
                 <li key={link.href}>
-                  <button
-                    onClick={() => router.push(link.href)}
-                    className="text-sm text-neutral-400 hover:text-white transition-colors"
+                  <Link
+                    href={link.href}
+                    className="text-sm text-neutral-400 hover:text-white transition-colors block"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>

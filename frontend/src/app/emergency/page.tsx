@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector, type RootState } from '@/store';
@@ -22,6 +23,7 @@ import {
 } from '@/store/slices/emergencySlice';
 import { useLanguageRedux } from '@/hooks/useLanguageRedux';
 import { useAuth } from '@/hooks/useAuthRedux';
+import { useLocationWebSocket } from '@/hooks/useLocationWebSocket';
 import { 
   AnimatedContainer, 
   Card, 
@@ -38,6 +40,22 @@ import {
 } from '@/components';
 import { SOSButton, EmergencyStatusComponent } from '@/features/emergency';
 import type { IncidentType, EmergencyLocation } from '@/types';
+
+// Dynamic import EmergencyMap to avoid SSR hydration errors
+const EmergencyMap = dynamic(
+  () => import('@/components').then((mod) => ({ default: mod.EmergencyMap })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-96 flex items-center justify-center bg-neutral-100 rounded-xl">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-sm text-neutral-600">Đang tải bản đồ...</p>
+        </div>
+      </div>
+    )
+  }
+);
 
 export default function EmergencyPage() {
   const router = useRouter();
@@ -62,9 +80,19 @@ export default function EmergencyPage() {
   const [otpCode, setOtpCode] = useState('');
   const [locationError, setLocationError] = useState('');
 
-  // Get user location
+  // WebSocket connection for real-time location tracking
+  const { isConnected: wsConnected, error: wsError } = useLocationWebSocket({
+    requestId: currentRequest?.id,
+    location,
+    isActive: !!currentRequest, // Only track when there's an active emergency
+  });
+
+  // Get user location and update continuously
   useEffect(() => {
+    if (typeof window === 'undefined') return; // SSR guard
+    
     if ('geolocation' in navigator) {
+      // Get initial location with high accuracy
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation({
@@ -72,44 +100,101 @@ export default function EmergencyPage() {
             longitude: position.coords.longitude,
             accuracy: position.coords.accuracy
           });
+          console.log('Location acquired:', {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          });
         },
         (error) => {
           setLocationError(t('location.error'));
-          console.error('Location error:', error);
+          console.error('Location error:', error.message || 'Unknown error', error.code);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
+
+      // Watch location changes when emergency is active
+      let watchId: number | null = null;
+      if (currentRequest) {
+        watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            setLocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              accuracy: position.coords.accuracy
+            });
+          },
+          (error) => {
+            console.error('Location watch error:', error.message || 'Unknown error');
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
+      }
+
+      return () => {
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+      };
     } else {
       setLocationError(t('location.denied'));
     }
-  }, [t]);
+  }, [t, currentRequest]);
 
   // Check rate limit on mount
+  // TODO: Re-enable after testing
+  /*
   useEffect(() => {
     dispatch(checkRateLimitAsync({ userId: user?.id }));
   }, [dispatch, user]);
+  */
 
   // Send SOS
   const handleSendSOS = useCallback(async () => {
+    console.log('🚨 handleSendSOS called!', { location, rateLimitInfo });
+    
     if (!location) {
       alert(t('location.allow'));
       return;
     }
 
+    // TODO: Re-enable rate limit check after testing
+    /*
     if (rateLimitInfo?.isBlocked) {
       alert(t('rateLimit.exceeded'));
       return;
     }
+    */
+
+    console.log('📡 Sending SOS with data:', {
+      incidentType,
+      location,
+      description,
+      userId: user?.id,
+      phoneNumber
+    });
 
     try {
-      await dispatch(sendSOSAsync({
+      const result = await dispatch(sendSOSAsync({
         incidentType,
         location,
         description: description || undefined,
         userId: user?.id,
         phoneNumber: phoneNumber || undefined
       })).unwrap();
+      
+      console.log('✅ SOS sent successfully:', result);
     } catch (error: any) {
-      console.error('Failed to send SOS:', error);
+      console.error('❌ Failed to send SOS:', error);
+      alert('Lỗi: ' + (error.message || 'Không thể gửi SOS'));
     }
   }, [dispatch, location, incidentType, description, user, phoneNumber, rateLimitInfo, t]);
 
@@ -150,11 +235,30 @@ export default function EmergencyPage() {
     }
   };
 
-  // Cancel SOS
+  // Cancel SOS with confirmation
   const handleCancel = async () => {
     if (currentRequest?.id) {
-      await dispatch(cancelSOSAsync(currentRequest.id));
-      dispatch(resetEmergency());
+      const confirmed = window.confirm(
+        t('sos.cancelConfirm') || 
+        'Bạn có chắc muốn hủy yêu cầu khẩn cấp? Điều này sẽ trừ 1 lần sử dụng SOS của bạn.'
+      );
+      
+      if (!confirmed) return;
+      
+      console.log('🚫 Cancelling SOS:', currentRequest.id);
+      
+      try {
+        await dispatch(cancelSOSAsync(currentRequest.id)).unwrap();
+        dispatch(resetEmergency());
+        
+        // Re-check rate limit to reflect the penalty
+        dispatch(checkRateLimitAsync({ userId: user?.id }));
+        
+        alert(t('sos.cancelled') || 'Yêu cầu khẩn cấp đã bị hủy. Đã trừ 1 lần sử dụng.');
+      } catch (error: any) {
+        console.error('❌ Failed to cancel SOS:', error);
+        alert('Lỗi khi hủy yêu cầu: ' + (error.message || 'Unknown error'));
+      }
     }
   };
 
@@ -331,35 +435,90 @@ export default function EmergencyPage() {
                     <div className="flex justify-center mb-6">
                       <SOSButton 
                         onSend={handleSendSOS} 
-                        disabled={rateLimitInfo?.isBlocked || !location}
+                        disabled={!location}
+                        // disabled={rateLimitInfo?.isBlocked || !location} // TODO: Re-enable after testing
                       />
                     </div>
 
+                    {/* Debug: Show why button is disabled */}
+                    {(!location) && (
+                      <div className="mb-4 p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm">
+                        <p className="font-semibold text-warning-800 mb-1">⚠️ Nút SOS bị vô hiệu hóa:</p>
+                        <ul className="list-disc list-inside text-warning-700 space-y-1">
+                          {!location && <li>Đang xác định vị trí của bạn... Vui lòng cho phép truy cập GPS</li>}
+                          {/* {rateLimitInfo?.isBlocked && <li>Bạn đã vượt quá giới hạn yêu cầu SOS</li>} */}
+                        </ul>
+                        {location && (
+                          <p className="mt-2 text-xs text-success-700">
+                            ✅ Vị trí: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)} (±{Math.round(location.accuracy)}m)
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     {/* Location Status Indicator */}
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      {location ? (
-                        <>
-                          <svg className="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                          </svg>
-                          <span className="font-semibold text-success-700">{t('location.detected')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-5 h-5 text-warning-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                          </svg>
-                          <span className="font-semibold text-warning-700">{t('location.detecting')}</span>
-                        </>
+                    <div className="flex flex-col items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        {location ? (
+                          <>
+                            <svg className="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                            </svg>
+                            <span className="font-semibold text-success-700">{t('location.detected')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5 text-warning-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                            </svg>
+                            <span className="font-semibold text-warning-700">{t('location.detecting')}</span>
+                          </>
+                        )}
+                      </div>
+                      
+                      {/* Show location error if any */}
+                      {locationError && (
+                        <div className="text-xs text-error-600 bg-error-50 px-3 py-1 rounded-full">
+                          {locationError}
+                        </div>
                       )}
                     </div>
+                  </motion.div>
+
+                  {/* Real-time Location Map */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    <Card>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-bold text-neutral-900">{t('location.yourLocation')}</h3>
+                          {wsConnected && currentRequest && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-success-100 text-success-700 rounded-full text-xs font-semibold">
+                              <div className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
+                              Live
+                            </span>
+                          )}
+                        </div>
+                        <InfoTooltip
+                          content="Vị trí của bạn đang được chia sẻ thời gian thực với đội cứu hộ khi có sự cố khẩn cấp."
+                          position="left"
+                        />
+                      </div>
+                      <EmergencyMap location={location} className="h-96" />
+                      {wsError && (
+                        <p className="text-sm text-warning-600 mt-2">{wsError}</p>
+                      )}
+                    </Card>
                   </motion.div>
 
                   {/* Incident Type Selection */}
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.1 }}
+                    transition={{ delay: 0.2 }}
                   >
                     <Card>
                       <div className="flex items-center gap-2 mb-4">

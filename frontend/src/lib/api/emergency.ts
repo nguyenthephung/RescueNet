@@ -139,6 +139,7 @@ export async function sendSOS(data: {
 
 /**
  * Cancel SOS request
+ * Applies rate limit penalty (deducts 1 usage)
  */
 export async function cancelSOS(sosId: string): Promise<{ success: boolean; message: string }> {
   await delay(500);
@@ -154,9 +155,24 @@ export async function cancelSOS(sosId: string): Promise<{ success: boolean; mess
 
   console.log('[MOCK] Cancelling SOS:', sosId);
 
+  // Apply rate limit penalty: deduct 1 usage (but don't increase requestCount)
+  // In production, backend should handle this
+  const deviceId = localStorage.getItem('device_id') || 'device_unknown';
+  const storageKey = `rate_limit_${deviceId}`;
+  const stored = localStorage.getItem(storageKey);
+  
+  if (stored) {
+    const rateData = JSON.parse(stored);
+    // Penalty: Mark as if user made a request (this reduces remaining requests)
+    rateData.requestCount += 1;
+    rateData.lastRequestAt = new Date().toISOString();
+    localStorage.setItem(storageKey, JSON.stringify(rateData));
+    console.log('[MOCK] Rate limit penalty applied. Request count:', rateData.requestCount);
+  }
+
   return {
     success: true,
-    message: 'SOS request cancelled successfully'
+    message: 'SOS request cancelled. Rate limit penalty applied.'
   };
 }
 

@@ -30,6 +30,7 @@ export const translations = {
     'common.emergency': 'Emergency',
     'common.urgent': 'Urgent',
     'common.callNow': 'Call Now',
+    'common.minutes': 'minutes',
     
     // Navigation
     'nav.dashboard': 'Control Center',
@@ -143,6 +144,9 @@ export const translations = {
     'sos.countdown': 'Sending in {seconds} seconds',
     'sos.cancelButton': 'CANCEL',
     'sos.sending': 'Sending SOS...',
+    'sos.sendingLocation': 'Your location is being sent to the rescue team. Please keep your network and GPS on.',
+    'sos.cancelConfirm': 'Are you sure you want to cancel the emergency request? This will deduct 1 SOS usage from your account.',
+    'sos.cancelled': 'Emergency request cancelled. 1 SOS usage deducted.',
     'sos.sent': 'SOS Sent Successfully',
     'sos.failed': 'Failed to send SOS',
     'sos.imOkay': "I'm Okay",
@@ -154,6 +158,23 @@ export const translations = {
     'sos.statusArrived': 'Team arrived',
     'sos.statusCompleted': 'Emergency resolved',
     'sos.statusCancelled': 'Request cancelled',
+    
+    // Status descriptions
+    'sos.statusPendingDesc': 'Processing your emergency request...',
+    'sos.sendingDesc': 'Connecting to emergency services...',
+    'sos.sentDesc': 'Emergency team has been notified',
+    'sos.statusAssignedDesc': 'Response team assigned to your location',
+    'sos.statusOnRouteDesc': 'Team is on the way to your location',
+    'sos.statusArrivedDesc': 'Emergency team has arrived',
+    'sos.statusCompletedDesc': 'Emergency situation resolved',
+    'sos.statusCancelledDesc': 'Emergency request cancelled',
+    'sos.failedDesc': 'Failed to send emergency request',
+    
+    // Priority levels
+    'priority.low': 'LOW PRIORITY',
+    'priority.normal': 'NORMAL PRIORITY',
+    'priority.high': 'HIGH PRIORITY',
+    'priority.critical': 'CRITICAL',
     
     // Incident types
     'incident.medical': 'Medical Emergency',
@@ -178,6 +199,8 @@ export const translations = {
     'verify.success': 'Verified successfully',
     'verify.failed': 'Verification failed',
     'verify.captchaRequired': 'Complete CAPTCHA to continue',
+    'verify.level': 'Verification Level',
+    'verify.levelValue': 'Level {level}',
     
     // Rate limit
     'rateLimit.exceeded': 'Too many requests. Try again later.',
@@ -195,9 +218,6 @@ export const translations = {
   'incident.descriptionPlaceholder': 'Describe the emergency situation (optional)...',
   'incident.example1': 'Example: "Person unconscious, not breathing" or "Heavy smoke from building"',
   'priority.createFullAccount': 'Create a full account for highest priority response',
-  'priority.high': 'HIGH',
-  'priority.normal': 'NORMAL',
-  'priority.low': 'LOW',
     // Quick tips
     'tips.stayCalm': 'Stay calm and ensure your safety first',
     'tips.allowLocation': 'Allow location access for fastest response',
@@ -225,6 +245,7 @@ export const translations = {
     // Location additional
     'location.detected': 'Location detected',
     'location.detecting': 'Detecting location...',
+    'location.yourLocation': 'Your Location',
     
     // Status card
     'status.label': 'Status',
@@ -270,6 +291,7 @@ export const translations = {
     'common.emergency': 'Khẩn cấp',
     'common.urgent': 'Cấp bách',
     'common.callNow': 'Gọi ngay',
+    'common.minutes': 'phút',
     
     // Navigation
     'nav.dashboard': 'Trung tâm điều hành',
@@ -383,6 +405,9 @@ export const translations = {
     'sos.countdown': 'Gửi sau {seconds} giây',
     'sos.cancelButton': 'HỦY',
     'sos.sending': 'Đang gửi SOS...',
+    'sos.sendingLocation': 'Vị trí của bạn đang được gửi đến đội cứu hộ. Vui lòng giữ kết nối mạng và GPS.',
+    'sos.cancelConfirm': 'Bạn có chắc muốn hủy yêu cầu khẩn cấp? Điều này sẽ trừ 1 lần sử dụng SOS của bạn.',
+    'sos.cancelled': 'Yêu cầu khẩn cấp đã bị hủy. Đã trừ 1 lần sử dụng SOS.',
     'sos.sent': 'Đã gửi SOS thành công',
     'sos.failed': 'Gửi SOS thất bại',
     'sos.imOkay': 'Tôi ổn rồi',
@@ -394,6 +419,23 @@ export const translations = {
     'sos.statusArrived': 'Đội đã đến',
     'sos.statusCompleted': 'Đã xử lý xong',
     'sos.statusCancelled': 'Đã hủy yêu cầu',
+    
+    // Status descriptions
+    'sos.statusPendingDesc': 'Đang xử lý yêu cầu khẩn cấp của bạn...',
+    'sos.sendingDesc': 'Đang kết nối tới dịch vụ khẩn cấp...',
+    'sos.sentDesc': 'Đội cứu hộ đã được thông báo',
+    'sos.statusAssignedDesc': 'Đội phản ứng đã được phân công đến vị trí của bạn',
+    'sos.statusOnRouteDesc': 'Đội đang trên đường đến vị trí của bạn',
+    'sos.statusArrivedDesc': 'Đội cứu hộ đã đến',
+    'sos.statusCompletedDesc': 'Tình huống khẩn cấp đã được giải quyết',
+    'sos.statusCancelledDesc': 'Yêu cầu khẩn cấp đã bị hủy',
+    'sos.failedDesc': 'Không thể gửi yêu cầu khẩn cấp',
+    
+    // Priority levels
+    'priority.low': 'ƯU TIÊN THẤP',
+    'priority.normal': 'ƯU TIÊN BÌNH THƯỜNG',
+    'priority.high': 'ƯU TIÊN CAO',
+    'priority.critical': 'NGUY CẤP',
     
     // Incident types
     'incident.medical': 'Cấp cứu y tế',
@@ -418,6 +460,8 @@ export const translations = {
     'verify.success': 'Xác thực thành công',
     'verify.failed': 'Xác thực thất bại',
     'verify.captchaRequired': 'Hoàn thành CAPTCHA để tiếp tục',
+    'verify.level': 'Mức độ xác thực',
+    'verify.levelValue': 'Mức {level}',
     
     // Rate limit
     'rateLimit.exceeded': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.',
@@ -435,9 +479,6 @@ export const translations = {
   'incident.descriptionPlaceholder': 'Mô tả tình huống khẩn cấp (không bắt buộc)...',
   'incident.example1': 'Ví dụ: "Người bất tỉnh, không thở" hoặc "Khói dày từ tòa nhà"',
   'priority.createFullAccount': 'Tạo tài khoản đầy đủ để được ưu tiên cao nhất',
-  'priority.high': 'CAO',
-  'priority.normal': 'BÌNH THƯỜNG',
-  'priority.low': 'THẤP',
     // Quick tips
     'tips.stayCalm': 'Giữ bình tĩnh và đảm bảo an toàn cho bản thân trước',
     'tips.allowLocation': 'Cho phép truy cập vị trí để nhận hỗ trợ nhanh nhất',
@@ -465,6 +506,7 @@ export const translations = {
     // Location additional
     'location.detected': 'Đã phát hiện vị trí',
     'location.detecting': 'Đang phát hiện vị trí...',
+    'location.yourLocation': 'Vị trí của bạn',
     
     // Status card
     'status.label': 'Trạng thái',

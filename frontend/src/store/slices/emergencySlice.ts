@@ -189,9 +189,8 @@ const emergencySlice = createSlice({
       if (state.countdown > 0) {
         state.countdown -= 1;
       }
-      if (state.countdown === 0) {
-        state.isCountingDown = false;
-      }
+      // Don't set isCountingDown = false here!
+      // Let the component handle it when countdown === 0
     },
     
     // Cancel countdown
@@ -258,6 +257,8 @@ const emergencySlice = createSlice({
     builder
       .addCase(sendSOSAsync.pending, (state) => {
         state.isLoading = true;
+        state.isCountingDown = false; // Stop countdown when sending
+        state.countdown = 3; // Reset for next time
         state.error = null;
       })
       .addCase(sendSOSAsync.fulfilled, (state, action) => {
@@ -268,6 +269,8 @@ const emergencySlice = createSlice({
       })
       .addCase(sendSOSAsync.rejected, (state, action) => {
         state.isLoading = false;
+        state.isCountingDown = false; // Allow retry
+        state.countdown = 3; // Reset countdown
         state.error = action.payload as string;
       });
 

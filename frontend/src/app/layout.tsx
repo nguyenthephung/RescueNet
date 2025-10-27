@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import "leaflet/dist/leaflet.css";
 import { ReduxProvider } from "@/store/ReduxProvider";
 
 export const metadata: Metadata = {

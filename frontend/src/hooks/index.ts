@@ -6,6 +6,7 @@ export { useLanguage } from './useLanguage';
 export { useWindowSize } from './useWindowSize';
 export { useIsMounted } from './useIsMounted';
 export { useOnClickOutside } from './useOnClickOutside';
+export { useLocationWebSocket } from './useLocationWebSocket';
 
 // Redux-based hooks (new)
 export { useAuth } from './useAuthRedux';

@@ -28,47 +28,47 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
     pending: { 
       color: 'warning', 
       label: t('sos.statusPending'),
-      description: 'Processing your emergency request...'
+      description: t('sos.statusPendingDesc') || 'Processing your emergency request...'
     },
     sending: { 
       color: 'warning', 
       label: t('sos.sending'),
-      description: 'Connecting to emergency services...'
+      description: t('sos.sendingDesc') || 'Connecting to emergency services...'
     },
     sent: { 
       color: 'success', 
       label: t('sos.sent'),
-      description: 'Emergency team has been notified'
+      description: t('sos.sentDesc') || 'Emergency team has been notified'
     },
     assigned: { 
       color: 'success', 
       label: t('sos.statusAssigned'),
-      description: 'Response team assigned to your location'
+      description: t('sos.statusAssignedDesc') || 'Response team assigned to your location'
     },
     on_route: { 
       color: 'warning', 
       label: t('sos.statusOnRoute'),
-      description: 'Team is on the way to your location'
+      description: t('sos.statusOnRouteDesc') || 'Team is on the way to your location'
     },
     arrived: { 
       color: 'success', 
       label: t('sos.statusArrived'),
-      description: 'Emergency team has arrived'
+      description: t('sos.statusArrivedDesc') || 'Emergency team has arrived'
     },
     completed: { 
       color: 'success', 
       label: t('sos.statusCompleted'),
-      description: 'Emergency situation resolved'
+      description: t('sos.statusCompletedDesc') || 'Emergency situation resolved'
     },
     cancelled: { 
       color: 'default', 
       label: t('sos.statusCancelled'),
-      description: 'Emergency request cancelled'
+      description: t('sos.statusCancelledDesc') || 'Emergency request cancelled'
     },
     failed: { 
       color: 'critical', 
       label: t('sos.failed'),
-      description: 'Failed to send emergency request'
+      description: t('sos.failedDesc') || 'Failed to send emergency request'
     },
   };
 
@@ -81,48 +81,70 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
       className="w-full max-w-2xl mx-auto space-y-6"
     >
       {/* Status Alert */}
-      <Alert variant={config.color} className="border-2">
-        <AlertTitle className="text-xl font-bold mb-2">
+      <Alert variant={config.color} className="border-2" style={{ backgroundColor: config.color === 'critical' ? 'rgb(254, 242, 242)' : config.color === 'success' ? 'rgb(240, 253, 244)' : config.color === 'warning' ? 'rgb(254, 252, 232)' : 'rgb(249, 250, 251)' }}>
+        <AlertTitle className="text-xl font-bold mb-2" style={{ color: config.color === 'critical' ? 'rgb(153, 27, 27)' : config.color === 'success' ? 'rgb(22, 101, 52)' : config.color === 'warning' ? 'rgb(133, 77, 14)' : 'rgb(31, 41, 55)' }}>
           {config.label}
         </AlertTitle>
-        <AlertDescription className="text-base">
+        <AlertDescription className="text-base" style={{ color: config.color === 'critical' ? 'rgb(185, 28, 28)' : config.color === 'success' ? 'rgb(21, 128, 61)' : config.color === 'warning' ? 'rgb(161, 98, 7)' : 'rgb(75, 85, 99)' }}>
           {config.description}
         </AlertDescription>
       </Alert>
 
       {/* ETA Card */}
       {request.eta && request.status !== 'completed' && request.status !== 'cancelled' && (
-        <Card className="bg-secondary-600 text-white border-0">
-          <div className="text-center py-8">
-            <div className="text-sm font-medium uppercase tracking-wider opacity-90 mb-2">
+        <div style={{ backgroundColor: 'rgb(37, 99, 235)', border: 'none', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.05em', 
+              color: 'rgba(255, 255, 255, 0.9)',
+              marginBottom: '8px'
+            }}>
               {t('sos.etaLabel')}
             </div>
-            <div className="text-6xl font-black">
+            <div style={{ 
+              fontSize: '3.75rem', 
+              fontWeight: '900',
+              color: 'rgb(255, 255, 255)',
+              lineHeight: '1'
+            }}>
               {request.eta}
             </div>
-            <div className="text-lg font-medium mt-2 opacity-90">
-              {t('common.urgent').toLowerCase()}
+            <div style={{ 
+              fontSize: '1.125rem', 
+              fontWeight: '500',
+              color: 'rgba(255, 255, 255, 0.9)',
+              marginTop: '8px'
+            }}>
+              {t('common.minutes') || 'minutes'}
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Request Details Card */}
-      <Card>
+      <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid rgb(229, 231, 235)' }}>
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'rgb(115, 115, 115)' }}>
               {t('incident.selectType')}
             </h3>
             <div className="flex items-center justify-between">
-              <span className="text-lg font-bold capitalize">
+              <span className="text-lg font-bold capitalize" style={{ color: 'rgb(23, 23, 23)' }}>
                 {t(`incident.${request.incidentType}`)}
               </span>
               <Badge 
                 variant={request.priority === 'critical' || request.priority === 'high' ? 'critical' : 'warning'}
                 className="text-sm font-semibold"
+                style={{ 
+                  backgroundColor: (request.priority === 'critical' || request.priority === 'high') ? 'rgb(220, 38, 38)' : 'rgb(234, 179, 8)',
+                  color: 'white',
+                  borderColor: (request.priority === 'critical' || request.priority === 'high') ? 'rgb(220, 38, 38)' : 'rgb(234, 179, 8)'
+                }}
               >
-                {request.priority.toUpperCase()}
+                {t(`priority.${request.priority}`) || request.priority.toUpperCase()}
               </Badge>
             </div>
           </div>
@@ -132,10 +154,10 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
           {request.description && (
             <>
               <div>
-                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wide mb-2" style={{ color: 'rgb(115, 115, 115)' }}>
                   {t('incident.description')}
                 </h3>
-                <p className="text-neutral-700">
+                <p style={{ color: 'rgb(64, 64, 64)' }}>
                   {request.description}
                 </p>
               </div>
@@ -145,11 +167,11 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
 
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-1">
-                Verification Level
+              <h3 className="text-sm font-semibold uppercase tracking-wide mb-1" style={{ color: 'rgb(115, 115, 115)' }}>
+                {t('verify.level') || 'Verification Level'}
               </h3>
-              <span className="text-base font-medium">
-                Level {request.verificationLevel}
+              <span className="text-base font-medium" style={{ color: 'rgb(23, 23, 23)' }}>
+                {t('verify.levelValue', { level: request.verificationLevel }) || `Level ${request.verificationLevel}`}
               </span>
             </div>
             <Badge 
@@ -159,14 +181,19 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
                 'default'
               }
               className="text-sm"
+              style={{
+                backgroundColor: request.verificationLevel === 2 ? 'rgb(34, 197, 94)' : request.verificationLevel === 1 ? 'rgb(234, 179, 8)' : 'rgb(212, 212, 212)',
+                color: 'white',
+                borderColor: request.verificationLevel === 2 ? 'rgb(34, 197, 94)' : request.verificationLevel === 1 ? 'rgb(234, 179, 8)' : 'rgb(212, 212, 212)'
+              }}
             >
-              {request.verificationLevel === 2 ? 'HIGH PRIORITY' : 
-               request.verificationLevel === 1 ? 'NORMAL PRIORITY' : 
-               'LOW PRIORITY'}
+              {request.verificationLevel === 2 ? t('priority.high') || 'HIGH PRIORITY' : 
+               request.verificationLevel === 1 ? t('priority.normal') || 'NORMAL PRIORITY' : 
+               t('priority.low') || 'LOW PRIORITY'}
             </Badge>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Action Buttons */}
       {(request.status === 'sent' || request.status === 'assigned' || request.status === 'on_route') && (
@@ -175,6 +202,9 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
             variant="primary"
             onClick={onMarkOkay}
             className="py-6 text-lg font-semibold"
+            style={{ backgroundColor: 'rgb(34, 197, 94)', color: 'white', borderColor: 'rgb(34, 197, 94)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgb(22, 163, 74)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgb(34, 197, 94)')}
           >
             {t('sos.imOkay')}
           </Button>
@@ -182,6 +212,9 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
             variant="outline"
             onClick={onCancel}
             className="py-6 text-lg font-semibold border-2"
+            style={{ backgroundColor: 'white', color: 'rgb(220, 38, 38)', borderColor: 'rgb(220, 38, 38)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgb(254, 242, 242)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; }}
           >
             {t('common.cancel')}
           </Button>
