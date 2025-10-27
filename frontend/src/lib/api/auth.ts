@@ -231,3 +231,7 @@ export async function requestPasswordReset(email: string): Promise<{ success: bo
     message: 'Password reset email sent',
   };
 }
+
+// Alias for backward compatibility
+export const resendCode = resendVerificationCode;
+

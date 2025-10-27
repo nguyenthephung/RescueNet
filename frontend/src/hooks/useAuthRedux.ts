@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector, type RootState } from '@/store';
 import { 
   loginAsync, 
   registerAsync, 
@@ -17,7 +17,7 @@ import type { LoginCredentials, RegisterData, VerificationData } from '@/types';
 
 export function useAuth() {
   const dispatch = useAppDispatch();
-  const { user, token, isAuthenticated, isLoading, error } = useAppSelector((state) => state.auth);
+  const { user, token, isAuthenticated, isLoading, error } = useAppSelector((state: RootState) => state.auth);
 
   const login = useCallback(
     async (credentials: LoginCredentials, rememberMe = false) => {
