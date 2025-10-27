@@ -30,8 +30,22 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
+    // Validation
     if (!formData.email || !formData.password) {
       setError(t('validation.required'));
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError(t('validation.email'));
+      return;
+    }
+
+    // Password length validation
+    if (formData.password.length < 6) {
+      setError(t('validation.minLength', { min: 6 } as any));
       return;
     }
 

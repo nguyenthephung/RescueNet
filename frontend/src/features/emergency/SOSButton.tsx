@@ -75,13 +75,18 @@ export function SOSButton({ onSend, disabled }: SOSButtonProps) {
                 whileTap={{ scale: 0.98 }}
                 className={`
                   relative w-full py-20 rounded-2xl
-                  bg-error-600 hover:bg-error-700
-                  shadow-2xl shadow-error-600/50
+                  shadow-2xl
                   transition-all duration-200
-                  ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-error-600/70'}
+                  ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
+                style={{
+                  backgroundColor: 'rgb(220, 38, 38)',
+                  boxShadow: '0 25px 50px -12px rgba(220, 38, 38, 0.5)'
+                }}
+                onMouseEnter={(e) => !disabled && (e.currentTarget.style.backgroundColor = 'rgb(185, 28, 28)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgb(220, 38, 38)')}
               >
-                <div className="flex flex-col items-center gap-4 text-white">
+                <div className="flex flex-col items-center gap-4" style={{ color: 'white' }}>
                   <div className="text-4xl font-black tracking-wider uppercase">
                     {t('sos.button')}
                   </div>

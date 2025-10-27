@@ -45,19 +45,43 @@ function RegisterFormContent() {
     e.preventDefault();
     setError('');
 
-    // Validation
+    // Required fields validation
     if (!formData.email || !formData.password || !formData.fullName) {
       setError(t('validation.required'));
       return;
     }
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError(t('validation.email'));
+      return;
+    }
+
+    // Phone format validation (optional but if provided, must be valid)
+    if (formData.phone) {
+      const phoneRegex = /^[\d\s\+\-\(\)]{10,}$/;
+      if (!phoneRegex.test(formData.phone)) {
+        setError(t('validation.phone'));
+        return;
+      }
+    }
+
+    // Password length validation
+    if (formData.password.length < 6) {
+      setError(t('validation.minLength', { min: 6 } as any));
+      return;
+    }
+
+    // Password match validation
     if (formData.password !== formData.confirmPassword) {
       setError(t('validation.passwordMatch'));
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Full name validation (at least 2 characters)
+    if (formData.fullName.trim().length < 2) {
+      setError(t('validation.fullNameMin', { min: 2 } as any));
       return;
     }
 
@@ -69,7 +93,7 @@ function RegisterFormContent() {
         router.push(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
       }
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || t('message.createFailed'));
     }
   };
 
@@ -125,16 +149,16 @@ function RegisterFormContent() {
 
               <div className="space-y-3">
                 <h2 className="text-4xl xl:text-5xl font-black leading-tight">
-                  Join as {t(`auth.${role}` as any)}
+                  {t('auth.joinAs')} {t(`auth.${role}` as any)}
                 </h2>
                 <p className="text-base xl:text-lg text-white/90 leading-relaxed">
-                  {t(`auth.${role}Desc` as any)}
+                  {t('auth.fillDetails')} {t(`auth.${role}Desc` as any)}
                 </p>
               </div>
 
               {/* Features */}
               <div className="space-y-4">
-                {['Quick Emergency Response', 'Real-time Updates', '24/7 Support'].map((feature, i) => (
+                {["feature.quickResponse", "feature.realTimeUpdates", "feature.support24"].map((key, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: -20 }}
@@ -147,7 +171,7 @@ function RegisterFormContent() {
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-white/90 font-medium">{feature}</span>
+                    <span className="text-white/90 font-medium">{t(key as any)}</span>
                   </motion.div>
                 ))}
               </div>
@@ -172,7 +196,7 @@ function RegisterFormContent() {
                 Create Account
               </h1>
               <p className="text-sm text-muted-foreground">
-                Fill in your details to get started as {t(`auth.${role}` as any)}
+                {t('auth.fillDetails')} {t(`auth.${role}` as any)}
               </p>
             </motion.div>
 

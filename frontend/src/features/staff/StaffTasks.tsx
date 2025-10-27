@@ -84,7 +84,7 @@ export function StaffTasks() {
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="p-4 rounded-lg border border-border hover:border-primary-300 dark:hover:border-primary-700 transition-colors cursor-pointer"
+              className="p-4 rounded-lg border border-border hover:border-primary-300 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-medium">{task.title}</h3>

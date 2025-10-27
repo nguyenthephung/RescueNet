@@ -8,6 +8,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  fullName?: string; // Add fullName field
   role: UserRole;
   avatar?: string;
   createdAt: string;
@@ -183,3 +184,82 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclu
   {
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
+
+// ===============================
+// EMERGENCY / SOS TYPES
+// ===============================
+
+export type IncidentType = 'medical' | 'fire' | 'flood' | 'security' | 'accident' | 'other';
+
+export type EmergencyStatus = 
+  | 'pending'        // Đang countdown
+  | 'sending'        // Đang gửi
+  | 'sent'           // Đã gửi thành công
+  | 'assigned'       // Đã phân công team
+  | 'on_route'       // Team đang đến
+  | 'arrived'        // Team đã đến
+  | 'completed'      // Hoàn thành
+  | 'cancelled'      // Đã hủy
+  | 'failed';        // Gửi thất bại
+
+export type VerificationLevel = 
+  | 0  // Anonymous (GPS only, low priority)
+  | 1  // Phone verified (SMS OTP, medium priority)
+  | 2; // Full account (KYC, highest priority)
+
+export interface EmergencyLocation {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  address?: string;
+}
+
+export interface EmergencyRequest {
+  id?: string;
+  userId?: string;
+  incidentType: IncidentType;
+  description?: string;
+  location: EmergencyLocation;
+  mediaUrls?: string[];
+  verificationLevel: VerificationLevel;
+  status: EmergencyStatus;
+  priority: 'low' | 'normal' | 'high' | 'critical';
+  deviceId?: string;
+  phoneNumber?: string;
+  medicalHistory?: string;
+  emergencyContacts?: string[];
+  eta?: number; // minutes
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RateLimitInfo {
+  requestCount: number;
+  lastRequestAt: string | null;
+  cooldownUntil: string | null;
+  isBlocked: boolean;
+  remainingRequests: number;
+  resetAt: string;
+}
+
+export interface EmergencyState {
+  currentRequest: EmergencyRequest | null;
+  isCountingDown: boolean;
+  countdown: number; // seconds
+  verificationLevel: VerificationLevel;
+  rateLimitInfo: RateLimitInfo | null;
+  isLoading: boolean;
+  error: string | null;
+  requiresCaptcha: boolean;
+  requiresOtp: boolean;
+  history: EmergencyRequest[];
+}
+
+export interface PhoneVerificationData {
+  phoneNumber: string;
+  code: string;
+}
+
+export interface CaptchaVerificationData {
+  token: string;
+}

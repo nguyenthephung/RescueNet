@@ -17,10 +17,10 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: 'bg-background text-foreground',
-        critical: 'border-error-600/50 bg-error-50 text-error-900 dark:border-error-600 dark:bg-error-950 dark:text-error-50 [&>svg]:text-error-600',
-        warning: 'border-warning-600/50 bg-warning-50 text-warning-900 dark:border-warning-600 dark:bg-warning-950 dark:text-warning-50 [&>svg]:text-warning-600',
-        success: 'border-success-600/50 bg-success-50 text-success-900 dark:border-success-600 dark:bg-success-950 dark:text-success-50 [&>svg]:text-success-600',
-        info: 'border-secondary-600/50 bg-secondary-50 text-secondary-900 dark:border-secondary-600 dark:bg-secondary-950 dark:text-secondary-50 [&>svg]:text-secondary-600',
+        critical: 'border-error-600/50 bg-error-50 text-error-900 [&>svg]:text-error-600',
+        warning: 'border-warning-600/50 bg-warning-50 text-warning-900 [&>svg]:text-warning-600',
+        success: 'border-success-600/50 bg-success-50 text-success-900 [&>svg]:text-success-600',
+        info: 'border-secondary-600/50 bg-secondary-50 text-secondary-900 [&>svg]:text-secondary-600',
       },
     },
     defaultVariants: {
@@ -79,7 +79,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary-600 text-white hover:bg-primary-700',
+        default: 'border-neutral-300 bg-neutral-100 text-neutral-900 hover:bg-neutral-200',
         secondary: 'border-transparent bg-secondary-600 text-white hover:bg-secondary-700',
         critical: 'border-transparent bg-error-600 text-white hover:bg-error-700',
         warning: 'border-transparent bg-warning-600 text-white hover:bg-warning-700',
