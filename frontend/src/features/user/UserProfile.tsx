@@ -25,7 +25,7 @@ export function UserProfile() {
         {/* Profile Summary Card */}
         <Card className="lg:col-span-1">
           <div className="flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-3xl font-bold text-primary-600 mb-4">
+            <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center text-3xl font-bold text-primary-600 mb-4">
               JD
             </div>
             <h2 className="text-xl font-semibold mb-1">John Doe</h2>

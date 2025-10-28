@@ -46,11 +46,17 @@ function VerifyContent() {
 
   const handleCodeChange = (index: number, value: string) => {
     // Only allow digits
-    if (value && !/^\d$/.test(value)) return;
+    if (value && !/^\d$/.test(value)) {
+      setError('Only numbers are allowed');
+      return;
+    }
 
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
+
+    // Clear error when user types
+    if (error) setError('');
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -74,8 +80,21 @@ function VerifyContent() {
   const handleVerify = async (verificationCode?: string) => {
     const codeToVerify = verificationCode || code.join('');
     
+    // Required validation
+    if (!codeToVerify || codeToVerify.trim() === '') {
+      setError('Verification code is required');
+      return;
+    }
+
+    // Length validation
     if (codeToVerify.length !== 6) {
-      setError(t('auth.enterCode'));
+      setError('Verification code must be exactly 6 digits');
+      return;
+    }
+
+    // Digit-only validation
+    if (!/^\d{6}$/.test(codeToVerify)) {
+      setError('Verification code must contain only numbers');
       return;
     }
 
@@ -280,7 +299,7 @@ function VerifyContent() {
                         w-14 h-16 text-center text-3xl font-bold rounded-xl
                         border-2 transition-all duration-300
                         ${digit 
-                          ? 'border-secondary-600 bg-secondary-50 dark:bg-secondary-900 shadow-lg scale-105' 
+                          ? 'border-secondary-600 bg-secondary-50 shadow-lg scale-105' 
                           : 'border-border bg-background hover:border-secondary-400'
                         }
                         focus:outline-none focus:ring-4 focus:ring-secondary-600/20 focus:border-secondary-600

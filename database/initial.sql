@@ -26,17 +26,39 @@ CREATE TABLE users (
 -- ===============================
 -- 2. CITIZEN REPORTS (SOS)
 -- ===============================
+-- Hỗ trợ 4 trạng thái người dùng:
+-- 1. Chưa đăng nhập (Anonymous): reporter_id = NULL, device_id != NULL, verification_level = 0, priority = low
+-- 2. Chưa đăng nhập nhưng xác thực SĐT: reporter_id = NULL, device_id != NULL, phone_number != NULL, verification_level = 1, priority = normal
+-- 3. Đăng nhập nhưng chưa xác thực SĐT: reporter_id != NULL, phone_number = NULL, verification_level = 1, priority = normal
+-- 4. Đăng nhập + xác thực SĐT: reporter_id != NULL, phone_number != NULL, verification_level = 2, priority = high/critical
 CREATE TABLE incidents (
     incident_id SERIAL PRIMARY KEY,
-    reporter_id INT REFERENCES users(user_id),
-    incident_type VARCHAR(50) NOT NULL,  -- fire, flood, health, etc.
-    description TEXT,
-    media_url TEXT, -- link ảnh/video
-    gps_lat DOUBLE PRECISION,
-    gps_lng DOUBLE PRECISION,
-    severity INT DEFAULT 1,  -- mức độ nghiêm trọng (AI/Rules)
-    status VARCHAR(30) DEFAULT 'pending',  -- pending, assigned, completed
-    created_at TIMESTAMP DEFAULT NOW()
+    reporter_id INT REFERENCES users(user_id),  -- NULL cho anonymous users (case 1, 2)
+    device_id VARCHAR(100),  -- track thiết bị cho tất cả users (unique identifier)
+    phone_number VARCHAR(20),  -- SĐT xác thực qua OTP (NULL nếu chưa xác thực)
+    verification_level INT DEFAULT 0,  -- 0: anonymous, 1: phone/account verified, 2: full verified (logged + phone)
+    incident_type VARCHAR(50) NOT NULL,  -- medical, fire, flood, security, accident, other
+    description TEXT,  -- Mô tả chi tiết tình huống khẩn cấp
+    media_url TEXT,  -- link ảnh/video (JSON array, e.g. ["url1", "url2"])
+    gps_lat DOUBLE PRECISION NOT NULL,  -- Vị trí GPS (gửi 1 lần khi countdown kết thúc)
+    gps_lng DOUBLE PRECISION NOT NULL,
+    gps_accuracy DOUBLE PRECISION,  -- độ chính xác GPS (meters)
+    severity INT DEFAULT 1,  -- mức độ nghiêm trọng: 1-5 (tính toán bởi AI/Rules)
+    priority VARCHAR(20) DEFAULT 'normal',  -- low, normal, high, critical (dựa vào verification_level)
+    status VARCHAR(30) DEFAULT 'pending',  -- pending, sent, assigned, on_route, arrived, completed, cancelled
+    eta INT,  -- thời gian dự kiến đội cứu hộ đến (phút)
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Bảng lưu lịch sử cập nhật vị trí (WebSocket updates mỗi 5 giây)
+CREATE TABLE incident_location_history (
+    history_id SERIAL PRIMARY KEY,
+    incident_id INT REFERENCES incidents(incident_id) ON DELETE CASCADE,
+    gps_lat DOUBLE PRECISION NOT NULL,
+    gps_lng DOUBLE PRECISION NOT NULL,
+    gps_accuracy DOUBLE PRECISION,
+    recorded_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE incident_feedback (

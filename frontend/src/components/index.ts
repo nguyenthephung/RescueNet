@@ -6,8 +6,12 @@
 export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';
-export { ThemeToggle } from './ThemeToggle';
 export { LanguageSelector } from './LanguageSelector';
+export { Tooltip, InfoTooltip } from './Tooltip';
+export { EmergencyMap } from './EmergencyMap';
+
+// Layout components
+export { Header, Footer } from './layout';
 
 // ShadCN/UI style components
 export { Alert, AlertTitle, AlertDescription, Badge, Separator } from './ui/shadcn';

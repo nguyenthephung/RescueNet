@@ -102,19 +102,21 @@ h6 {
 
 
 /* Component styles - Emergency optimized */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: all 200ms;
-  outline: none;
-  letter-spacing: 0.025em;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
+/* Wrapped in @layer base to give LOWEST priority (Tailwind utilities will override) */
+@layer base {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 200ms;
+    outline: none;
+    letter-spacing: 0.025em;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
 
 .btn:focus-visible {
   outline: 2px solid rgb(var(--ring));
@@ -382,6 +384,7 @@ h6 {
   color: rgb(254 202 202);
   border: 1px solid rgb(220 38 38);
 }
+} /* End @layer base */
 
 
 /* Utility classes */
