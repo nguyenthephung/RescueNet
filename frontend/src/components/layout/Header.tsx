@@ -9,8 +9,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
-import { useAuth } from '@/hooks/useAuthRedux';
+import { useLanguageRedux } from '@/hooks';
+import { useAuth } from '@/hooks';
 import { LanguageSelector, Button } from '@/components';
 import Image from 'next/image';
 

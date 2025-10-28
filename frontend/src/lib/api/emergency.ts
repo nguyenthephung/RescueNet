@@ -209,6 +209,12 @@ export async function getSOSStatus(sosId: string): Promise<EmergencyRequest> {
 
 /**
  * Verify phone number with OTP
+ * Backend should:
+ * 1. Check OTP code against stored value
+ * 2. Verify not expired (< 5 minutes)
+ * 3. Update user verification_level to 1
+ * 4. Link phone_number to device_id or user_id
+ * 5. Return new verificationLevel
  */
 export async function verifyPhoneOTP(data: PhoneVerificationData): Promise<{ 
   success: boolean; 
@@ -228,6 +234,7 @@ export async function verifyPhoneOTP(data: PhoneVerificationData): Promise<{
   */
 
   console.log('[MOCK] Verifying phone:', data.phoneNumber, 'with code:', data.code);
+  console.log('[INFO] Backend TODO: Verify OTP in database and update verification_level');
 
   if (data.code.length === 6 && /^\d+$/.test(data.code)) {
     return {
@@ -242,6 +249,11 @@ export async function verifyPhoneOTP(data: PhoneVerificationData): Promise<{
 
 /**
  * Send OTP to phone number
+ * Backend should:
+ * 1. Generate 6-digit OTP code
+ * 2. Store in database with expiry (5 minutes)
+ * 3. Send SMS via Twilio/AWS SNS/Vietnam SMS Gateway
+ * 4. Return success response
  */
 export async function sendOTP(phoneNumber: string): Promise<{ success: boolean; message: string }> {
   await delay(800);
@@ -257,6 +269,7 @@ export async function sendOTP(phoneNumber: string): Promise<{ success: boolean; 
   */
 
   console.log('[MOCK] Sending OTP to:', phoneNumber);
+  console.log('[INFO] Backend TODO: Integrate SMS service (Twilio/AWS SNS/VNPT SMS)');
 
   return {
     success: true,
@@ -308,6 +321,7 @@ export async function getEmergencyHistory(userId: string): Promise<EmergencyRequ
 
 /**
  * Update "I'm OK" status
+ * Applies rate limit penalty (deducts 1 usage) like cancel
  */
 export async function updateImOkay(sosId: string): Promise<{ success: boolean; message: string }> {
   await delay(500);
@@ -315,8 +329,22 @@ export async function updateImOkay(sosId: string): Promise<{ success: boolean; m
   // TODO: Replace with actual API call
   console.log('[MOCK] User marked as OK for SOS:', sosId);
 
+  // Apply rate limit penalty: deduct 1 usage (same as cancel)
+  const deviceId = localStorage.getItem('device_id') || 'device_unknown';
+  const storageKey = `rate_limit_${deviceId}`;
+  const stored = localStorage.getItem(storageKey);
+  
+  if (stored) {
+    const rateData = JSON.parse(stored);
+    // Penalty: Mark as if user made a request
+    rateData.requestCount += 1;
+    rateData.lastRequestAt = new Date().toISOString();
+    localStorage.setItem(storageKey, JSON.stringify(rateData));
+    console.log('[MOCK] Rate limit penalty applied (Im Okay). Request count:', rateData.requestCount);
+  }
+
   return {
     success: true,
-    message: 'Status updated: You are okay'
+    message: 'Status updated: You are okay. Rate limit penalty applied.'
   };
 }

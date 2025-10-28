@@ -197,27 +197,20 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
 
       {/* Action Buttons */}
       {(request.status === 'sent' || request.status === 'assigned' || request.status === 'on_route') && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="w-full">
           <Button
             variant="primary"
             onClick={onMarkOkay}
-            className="py-6 text-lg font-semibold"
+            className="w-full py-6 text-lg font-semibold"
             style={{ backgroundColor: 'rgb(34, 197, 94)', color: 'white', borderColor: 'rgb(34, 197, 94)' }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgb(22, 163, 74)')}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgb(34, 197, 94)')}
           >
-            {t('sos.imOkay')}
+            ✓ {t('sos.imOkay')}
           </Button>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            className="py-6 text-lg font-semibold border-2"
-            style={{ backgroundColor: 'white', color: 'rgb(220, 38, 38)', borderColor: 'rgb(220, 38, 38)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgb(254, 242, 242)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; }}
-          >
-            {t('common.cancel')}
-          </Button>
+          <p className="text-xs text-center text-neutral-500 mt-2">
+            {t('sos.okayPenaltyNote') || 'Clicking this will mark the emergency as resolved and deduct 1 SOS usage'}
+          </p>
         </div>
       )}
     </motion.div>

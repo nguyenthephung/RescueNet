@@ -79,6 +79,8 @@ export default function EmergencyPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [locationError, setLocationError] = useState('');
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   // WebSocket connection for real-time location tracking
   const { isConnected: wsConnected, error: wsError } = useLocationWebSocket({
@@ -178,15 +180,21 @@ export default function EmergencyPage() {
       incidentType,
       location,
       description,
+      mediaFiles: mediaFiles.length,
       userId: user?.id,
       phoneNumber
     });
 
     try {
+      // TODO: Upload media files to server and get URLs
+      // For now, use preview URLs as placeholder
+      const mediaUrls = previewUrls.length > 0 ? previewUrls : undefined;
+
       const result = await dispatch(sendSOSAsync({
         incidentType,
         location,
         description: description || undefined,
+        mediaUrls,
         userId: user?.id,
         phoneNumber: phoneNumber || undefined
       })).unwrap();
@@ -196,7 +204,7 @@ export default function EmergencyPage() {
       console.error('❌ Failed to send SOS:', error);
       alert('Lỗi: ' + (error.message || 'Không thể gửi SOS'));
     }
-  }, [dispatch, location, incidentType, description, user, phoneNumber, rateLimitInfo, t]);
+  }, [dispatch, location, incidentType, description, mediaFiles, previewUrls, user, phoneNumber, rateLimitInfo, t]);
 
   // Send OTP
   const handleSendOTP = async () => {
@@ -227,11 +235,31 @@ export default function EmergencyPage() {
     }
   };
 
-  // Mark as okay
+  // Mark as okay - Apply penalty like cancel
   const handleMarkOkay = async () => {
     if (currentRequest?.id) {
-      await dispatch(markAsOkayAsync(currentRequest.id));
-      dispatch(resetEmergency());
+      const confirmed = window.confirm(
+        t('sos.okayConfirm') || 
+        'Xác nhận bạn đã ổn? Hành động này sẽ trừ 1 lần sử dụng SOS của bạn.'
+      );
+      
+      if (!confirmed) return;
+      
+      console.log('✅ Marking as okay:', currentRequest.id);
+      
+      try {
+        // Call API to mark as okay (also applies penalty like cancel)
+        await dispatch(markAsOkayAsync(currentRequest.id)).unwrap();
+        dispatch(resetEmergency());
+        
+        // Re-check rate limit to reflect the penalty
+        dispatch(checkRateLimitAsync({ userId: user?.id }));
+        
+        alert(t('sos.okayCompleted') || 'Tuyệt vời! Đã đánh dấu khẩn cấp hoàn tất. Đã trừ 1 lần sử dụng SOS.');
+      } catch (error: any) {
+        console.error('❌ Failed to mark as okay:', error);
+        alert('Lỗi: ' + (error.message || 'Unknown error'));
+      }
     }
   };
 
@@ -441,18 +469,22 @@ export default function EmergencyPage() {
                     </div>
 
                     {/* Debug: Show why button is disabled */}
-                    {(!location) && (
+                    {!location && (
                       <div className="mb-4 p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm">
                         <p className="font-semibold text-warning-800 mb-1">⚠️ Nút SOS bị vô hiệu hóa:</p>
                         <ul className="list-disc list-inside text-warning-700 space-y-1">
-                          {!location && <li>Đang xác định vị trí của bạn... Vui lòng cho phép truy cập GPS</li>}
+                          <li>Đang xác định vị trí của bạn... Vui lòng cho phép truy cập GPS</li>
                           {/* {rateLimitInfo?.isBlocked && <li>Bạn đã vượt quá giới hạn yêu cầu SOS</li>} */}
                         </ul>
-                        {location && (
-                          <p className="mt-2 text-xs text-success-700">
-                            ✅ Vị trí: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)} (±{Math.round(location.accuracy)}m)
-                          </p>
-                        )}
+                      </div>
+                    )}
+                    
+                    {/* Location status (show when available) */}
+                    {location && (
+                      <div className="mb-4 p-3 bg-success-50 border border-success-200 rounded-lg">
+                        <p className="text-xs text-success-700">
+                          ✅ Vị trí: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)} (±{Math.round(location.accuracy || 0)}m)
+                        </p>
                       </div>
                     )}
 
@@ -601,6 +633,71 @@ export default function EmergencyPage() {
                       <p className="text-xs text-neutral-500 mt-2">
                         {t('incident.example1')}
                       </p>
+
+                      {/* Media Upload */}
+                      <div className="mt-4 pt-4 border-t border-neutral-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <label className="text-sm font-semibold text-neutral-900">
+                            {t('sos.media') || 'Photos/Videos'} ({mediaFiles.length}/3)
+                          </label>
+                        </div>
+
+                        {/* Preview Grid */}
+                        {previewUrls.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2 mb-3">
+                            {previewUrls.map((url, index) => (
+                              <div key={index} className="relative aspect-square">
+                                <img
+                                  src={url}
+                                  alt={`Preview ${index + 1}`}
+                                  className="w-full h-full object-cover rounded-lg border-2 border-neutral-200"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newFiles = mediaFiles.filter((_, i) => i !== index);
+                                    const newUrls = previewUrls.filter((_, i) => i !== index);
+                                    URL.revokeObjectURL(previewUrls[index]);
+                                    setMediaFiles(newFiles);
+                                    setPreviewUrls(newUrls);
+                                  }}
+                                  className="absolute -top-2 -right-2 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center hover:bg-primary-700 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Upload Button */}
+                        {mediaFiles.length < 3 && (
+                          <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-neutral-300 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all cursor-pointer">
+                            <svg className="w-5 h-5 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm text-neutral-700 font-medium">
+                              {t('sos.uploadMedia') || 'Add Photo/Video'}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*,video/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                if (files.length === 0) return;
+                                const newFiles = [...mediaFiles, ...files].slice(0, 3);
+                                setMediaFiles(newFiles);
+                                const urls = newFiles.map(file => URL.createObjectURL(file));
+                                setPreviewUrls(urls);
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
+                      </div>
                     </Card>
                   </motion.div>
                 </>
@@ -639,9 +736,36 @@ export default function EmergencyPage() {
                         <h3 className="text-lg font-bold text-warning-900 mb-1">
                           {t('verify.upgradePriorityTitle')}
                         </h3>
-                        <p className="text-sm text-warning-800">
+                        <p className="text-sm text-warning-800 mb-3">
                           {t('verify.upgradePrompt')}
                         </p>
+                        
+                        {/* Benefits List */}
+                        <div className="bg-white/50 rounded-lg p-3 mb-3">
+                          <p className="text-xs font-semibold text-warning-900 mb-2">
+                            {t('verify.benefits') || 'Xác minh SĐT để được:'}
+                          </p>
+                          <ul className="space-y-1 text-xs text-warning-800">
+                            <li className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-success-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span>{t('verify.benefit1') || 'Ưu tiên cao hơn (ETA giảm từ 15 → 10 phút)'}</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-success-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span>{t('verify.benefit2') || 'Tăng giới hạn SOS (2 → 5 lần/ngày)'}</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-success-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span>{t('verify.benefit3') || 'Nhận thông báo SMS về trạng thái cứu hộ'}</span>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                     

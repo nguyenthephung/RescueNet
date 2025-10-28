@@ -150,7 +150,7 @@ export function EmergencyMap({ location, className = '' }: EmergencyMapProps) {
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} style={{ zIndex: 1 }}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 rounded-xl z-10">
           <div className="text-center">
