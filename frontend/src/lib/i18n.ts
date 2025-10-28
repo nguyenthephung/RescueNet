@@ -277,6 +277,19 @@ export const translations = {
     'verify.upgradePriorityTitle': 'Upgrade Priority',
     'verify.enterCodeTitle': 'Enter Verification Code',
     'verify.codeSentTo': 'We sent a 6-digit code to {phone}',
+    
+    // Chat
+    'chat.title': 'Emergency Chat',
+    'chat.placeholder': 'Type a message...',
+    'chat.send': 'Send',
+    'chat.connected': 'Connected',
+    'chat.disconnected': 'Disconnected',
+    'chat.reconnecting': 'Reconnecting...',
+    'chat.typingIndicator': '{user} is typing...',
+    'chat.noMessages': 'No messages yet. Start the conversation!',
+    'chat.guestName': 'Guest',
+    'chat.connecting': 'Connecting...',
+    'chat.sendHint': 'Press Enter to send, Shift+Enter for new line',
   },
   vi: {
     // Common
@@ -554,6 +567,19 @@ export const translations = {
     'verify.upgradePriorityTitle': 'Nâng cấp ưu tiên',
     'verify.enterCodeTitle': 'Nhập mã xác thực',
     'verify.codeSentTo': 'Chúng tôi đã gửi mã 6 chữ số đến {phone}',
+    
+    // Chat
+    'chat.title': 'Chat khẩn cấp',
+    'chat.placeholder': 'Nhập tin nhắn...',
+    'chat.send': 'Gửi',
+    'chat.connected': 'Đã kết nối',
+    'chat.disconnected': 'Mất kết nối',
+    'chat.reconnecting': 'Đang kết nối lại...',
+    'chat.typingIndicator': '{user} đang nhập...',
+    'chat.noMessages': 'Chưa có tin nhắn. Bắt đầu cuộc trò chuyện!',
+    'chat.guestName': 'Khách',
+    'chat.connecting': 'Đang kết nối...',
+    'chat.sendHint': 'Nhấn Enter để gửi, Shift+Enter để xuống dòng',
   },
 };
 

@@ -7,18 +7,62 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguageRedux } from '@/hooks/useLanguageRedux';
 import { Button, Card, Badge, Alert, AlertTitle, AlertDescription, Separator } from '@/components';
-import type { EmergencyRequest, EmergencyStatus } from '@/types';
+import { ChatWindow } from '@/features/chat';
+import { useChatSocket } from '@/hooks/useChatSocket';
+import { getChatAuthToken } from '@/lib/api/chat';
+import type { EmergencyRequest, EmergencyStatus, ChatMessage } from '@/types';
 
 interface EmergencyStatusProps {
   request: EmergencyRequest;
   onMarkOkay: () => void;
   onCancel: () => void;
+  userId?: string;
+  userToken?: string;
 }
 
-export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: EmergencyStatusProps) {
+export function EmergencyStatusComponent({ 
+  request, 
+  onMarkOkay, 
+  onCancel,
+  userId,
+  userToken 
+}: EmergencyStatusProps) {
   const { t } = useLanguageRedux();
+  const [authToken, setAuthToken] = useState<string>('');
+  const [senderId, setSenderId] = useState<string>('');
+
+  // Get authentication token (guest or user)
+  useEffect(() => {
+    async function initAuth() {
+      const token = await getChatAuthToken(userId, userToken);
+      setAuthToken(token);
+      setSenderId(userId || 'guest_' + Math.random().toString(36).substring(2, 15));
+    }
+    initAuth();
+  }, [userId, userToken]);
+
+  // Initialize chat WebSocket
+  const {
+    messages,
+    isConnected,
+    isTyping,
+    typingUser,
+    error,
+    sendMessage,
+    startTyping,
+    stopTyping
+  } = useChatSocket({
+    incidentId: request.id || 'unknown',
+    authToken,
+    senderId,
+    senderType: 'victim',
+    onMessageReceived: useCallback((message: ChatMessage) => {
+      console.log('[Chat] New message:', message);
+    }, [])
+  });
 
   const statusConfig: Record<EmergencyStatus, { 
     color: 'critical' | 'warning' | 'success' | 'default'; 
@@ -194,6 +238,23 @@ export function EmergencyStatusComponent({ request, onMarkOkay, onCancel }: Emer
           </div>
         </div>
       </div>
+
+      {/* Chat Window */}
+      {authToken && (
+        <div className="w-full mt-6">
+          <ChatWindow
+            messages={messages}
+            currentUserId={senderId}
+            isConnected={isConnected}
+            isTyping={isTyping}
+            typingUser={typingUser}
+            error={error}
+            onSendMessage={sendMessage}
+            onTypingStart={startTyping}
+            onTypingStop={stopTyping}
+          />
+        </div>
+      )}
 
       {/* Action Buttons */}
       {(request.status === 'sent' || request.status === 'assigned' || request.status === 'on_route') && (

@@ -263,3 +263,36 @@ export interface PhoneVerificationData {
 export interface CaptchaVerificationData {
   token: string;
 }
+
+// ===============================
+// Chat Types
+// ===============================
+
+export interface ChatMessage {
+  id: string;
+  incidentId: string;
+  senderId: string;           // user_id, guest_id, or responder_id
+  senderType: 'victim' | 'responder' | 'system';
+  senderName: string;
+  message: string;
+  timestamp: string;
+  status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+  attachments?: {
+    type: 'image' | 'video' | 'location';
+    url: string;
+  }[];
+}
+
+export interface ChatState {
+  messages: ChatMessage[];
+  isConnected: boolean;
+  isTyping: boolean;
+  typingUser?: string;
+  error: string | null;
+}
+
+export interface GuestTokenResponse {
+  token: string;
+  guestId: string;
+  expiresAt: string;
+}
