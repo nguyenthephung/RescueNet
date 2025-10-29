@@ -9,14 +9,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useLanguageRedux } from '@/hooks';
+import { useLanguage } from '@/hooks';
 import { useAuth } from '@/hooks';
 import { LanguageSelector, Button } from '@/components';
 import Image from 'next/image';
 
 export function Header() {
   const router = useRouter();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);

@@ -8,7 +8,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks';
 import { Button, Card, Badge, Alert, AlertTitle, AlertDescription, Separator } from '@/components';
 import { ChatWindow } from '@/features/chat';
 import { useChatSocket } from '@/hooks/useChatSocket';
@@ -30,7 +30,7 @@ export function EmergencyStatusComponent({
   userId,
   userToken 
 }: EmergencyStatusProps) {
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const [authToken, setAuthToken] = useState<string>('');
   const [senderId, setSenderId] = useState<string>('');
 

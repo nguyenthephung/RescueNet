@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatedContainer, Card } from '@/components';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks';
 import { motion } from 'framer-motion';
 import type { UserRole } from '@/types';
 
@@ -49,7 +49,7 @@ const roleOptions: RoleOption[] = [
 
 export default function RegisterSelectPage() {
   const router = useRouter();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   const handleSelectRole = (role: UserRole) => {

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -21,7 +21,7 @@ export function ChatInput({
   disabled = false,
   placeholder
 }: ChatInputProps) {
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);

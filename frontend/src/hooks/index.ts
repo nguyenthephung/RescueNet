@@ -9,4 +9,4 @@ export { useLocationWebSocket } from './useLocationWebSocket';
 
 // Redux-based hooks (new)
 export { useAuth } from './useAuthRedux';
-export { useLanguageRedux } from './useLanguageRedux';
+export { useLanguage } from './useLanguage';

@@ -10,14 +10,14 @@ import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { AnimatedContainer, Card, Input, Button, Alert, AlertDescription } from '@/components';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuthRedux';
 import type { RegisterData, UserRole } from '@/types';
 
 function RegisterFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const { register, isLoading } = useAuth();
 
   const [role, setRole] = useState<UserRole>('citizen');

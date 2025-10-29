@@ -5,11 +5,11 @@
 
 'use client';
 
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks/useLanguage';
 import Link from 'next/link';
 
 export function Footer() {
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   const supportLinks = [

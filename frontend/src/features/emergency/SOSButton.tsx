@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector, type RootState } from '@/store';
 import { startCountdown, tickCountdown, cancelCountdown } from '@/store/slices/emergencySlice';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Button, Alert, AlertTitle, AlertDescription } from '@/components';
 
 interface SOSButtonProps {
@@ -20,7 +20,7 @@ interface SOSButtonProps {
 
 export function SOSButton({ onSend, disabled }: SOSButtonProps) {
   const dispatch = useAppDispatch();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const { isCountingDown, countdown, isLoading } = useAppSelector((state: RootState) => state.emergency);
 
   useEffect(() => {

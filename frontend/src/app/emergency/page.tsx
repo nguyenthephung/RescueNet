@@ -21,7 +21,7 @@ import {
   setRequiresOtp,
   resetEmergency
 } from '@/store/slices/emergencySlice';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks';
 import { useAuth } from '@/hooks/useAuthRedux';
 import { useLocationWebSocket } from '@/hooks/useLocationWebSocket';
 import { 
@@ -60,7 +60,7 @@ const EmergencyMap = dynamic(
 export default function EmergencyPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   
   const { 

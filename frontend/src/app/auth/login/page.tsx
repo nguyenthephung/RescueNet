@@ -9,12 +9,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { AnimatedContainer, Card, Input, Button, Alert, AlertDescription, Separator } from '@/components';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuthRedux';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 

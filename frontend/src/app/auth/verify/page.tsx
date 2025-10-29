@@ -9,13 +9,13 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { AnimatedContainer, Card, Button, Alert, AlertDescription } from '@/components';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage } from '@/hooks';
 import { useAuth } from '@/hooks/useAuthRedux';
 
 function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const { verifyEmail, resendCode, isLoading } = useAuth();
 
   const email = searchParams.get('email') || '';

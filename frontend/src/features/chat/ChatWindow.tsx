@@ -6,7 +6,7 @@
 import React, { useEffect, useRef } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import { useLanguageRedux } from '@/hooks/useLanguageRedux';
+import { useLanguage} from '@/hooks/useLanguage';
 import type { ChatMessage as ChatMessageType } from '@/types';
 
 interface ChatWindowProps {
@@ -32,7 +32,7 @@ export function ChatWindow({
   onTypingStart,
   onTypingStop
 }: ChatWindowProps) {
-  const { t } = useLanguageRedux();
+  const { t } = useLanguage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
