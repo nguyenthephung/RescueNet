@@ -88,9 +88,14 @@ function RegisterFormContent() {
     try {
       const result = await register(formData);
       
-      if (result.requiresVerification) {
-        // Navigate to verification page
-        router.push(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
+      if (result.success) {
+        if (result.requiresVerification) {
+          // Navigate to verification page if verification is required
+          router.push(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
+        } else {
+          // Registration successful without verification - go to login
+          router.push('/auth/login?registered=true');
+        }
       }
     } catch (err: any) {
       setError(err.message || t('message.createFailed'));

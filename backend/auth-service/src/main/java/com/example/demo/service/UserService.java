@@ -38,6 +38,7 @@ public class UserService {
     ProfileClient profileClient;
     ProfileMapper profileMapper;
     RoleRepository roleRepository;
+    OtpService otpService;
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         log.info("In method get Users");
@@ -63,22 +64,29 @@ public class UserService {
     public UserResponse addUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
-
-//        try {
-//            user = userRepository.save(user);
-//        } catch (DataIntegrityViolationException exception) {
-//            throw new AppException(ErrorCode.USER_EXISTED);
-//        }
         HashSet<String> roles = new HashSet<>();
-//        roles.add(Role.USER.name());
-//        user.setRoles(roles);
-        if(userRepository.existsByfullName(request.getFullName()))
+        // Check if email already exists
+        if(userRepository.existsByEmail(request.getEmail()))
             throw new AppException(ErrorCode.USER_EXISTED);
+        
+        // Set user as pending verification
+        user.setStatus("pending");
+        user.setEmailVerified(false);
+        
         user = userRepository.save(user);
 
-        var profileRequest = profileMapper.toProfileCreationRequest(request);
-        var profildeResponse = profileClient.createProfile((profileRequest));
-        log.info((profildeResponse.toString()));
+        // Generate and send OTP
+        String userName = user.getFullName() != null ? user.getFullName() : 
+                         (user.getFirstName() + " " + user.getLastName());
+        otpService.generateAndSendOtp(user.getEmail(), userName);
+
+        // TODO: Integrate with Profile Service when ready
+        // Profile Service integration is temporarily disabled
+        // var profileRequest = profileMapper.toProfileCreationRequest(request);
+        // var profildeResponse = profileClient.createProfile((profileRequest));
+        // log.info((profildeResponse.toString()));
+        
+        log.info("User created successfully, OTP sent to: {}", user.getEmail());
         return userMapper.toUserResponse(user);
     }
     public UserResponse getMyInfo (){

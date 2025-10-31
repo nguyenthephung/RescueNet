@@ -33,10 +33,23 @@ public class User {
     LocalDate dob;
     String city;
     @Column(name = "status", length = 20)
-    private String status = "active"; // mặc định
+    @Builder.Default
+    private String status = "pending"; // mặc định pending cho đến khi verify
+    
+    @Column(name = "email_verified") // Remove nullable = false for now
+    @Builder.Default
+    private Boolean emailVerified = false; // Use Boolean instead of boolean to allow null
+    
     @Column(name = "created_at")
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
-    @ManyToMany
+    
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "users_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     Set<Role> roles;
 //    // Liên kết với bảng roles
 //    @ManyToOne(fetch = FetchType.LAZY)

@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,11 +27,29 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final String[] PUBLIC_ENDPOINTS  = {"/register","/introspect","/login","/logout"};
+    private final String[] PUBLIC_ENDPOINTS  = {
+        "/register",
+        "/introspect",
+        "/login",
+        "/logout",
+        "/verify",
+        "/resend-code"
+    };
     @Value("${jwt.signerKey}")
     private String singerKey;
+    
+    // CORS is handled by API Gateway - no need for CORS config here
+    // private final CorsConfigurationSource corsConfigurationSource;
+    
+    // public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
+    //     this.corsConfigurationSource = corsConfigurationSource;
+    // }
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        // CORS is handled by API Gateway, disable it here to avoid duplicate headers
+        // httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource));
+        
         httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(PUBLIC_ENDPOINTS )
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,"/getUsers")
