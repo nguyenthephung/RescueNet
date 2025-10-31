@@ -4,6 +4,7 @@
  */
 
 import type { LoginCredentials, RegisterData, VerificationData, AuthResponse, User } from '@/types';
+import apiClient, { tokenManager } from './apiClient';
 
 // API Gateway base URL from environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8888/api/v1';
@@ -13,35 +14,27 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8888/a
  */
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'include', // Include cookies
-      body: JSON.stringify({
-        username: credentials.email, // Backend expects 'username' field
-        password: credentials.password
-      })
+    const response = await apiClient.post('/auth/login', {
+      fullName: credentials.email, // Backend expects 'fullName' field
+      passwordHash: credentials.password
     });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-      throw new Error(error.message || 'Invalid credentials');
-    }
-
-    const data = await response.json();
+    const data = response.data;
     
-    // Backend returns: { code, message, result: { token, expiry, authenticated } }
+    // Backend returns: { code, message, result: { token, refreshToken, expiresIn, authenticated } }
     if (data.result && data.result.token) {
-      // Store token in localStorage
-      localStorage.setItem('auth_token', data.result.token);
+      // Store tokens using tokenManager
+      tokenManager.setTokens(
+        data.result.token,
+        data.result.refreshToken,
+        data.result.expiresIn
+      );
       
       // Return in expected format
       return {
         success: true,
         token: data.result.token,
+        refreshToken: data.result.refreshToken,
         message: data.message || 'Login successful',
         user: {
           id: 'temp', // Will be fetched from token introspection
@@ -55,9 +48,9 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
     }
 
     throw new Error('Invalid response from server');
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || error.message || 'Login failed');
   }
 }
 
