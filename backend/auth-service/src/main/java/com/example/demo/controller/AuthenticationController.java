@@ -4,9 +4,7 @@ import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.AuthenticationResponse;
 import com.example.demo.dto.response.IntrospectResponse;
 import com.example.demo.service.AuthenticationService;
-import com.example.demo.service.OtpService;
 import com.nimbusds.jose.JOSEException;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +18,11 @@ import java.text.ParseException;
 
 @Builder
 @RestController
-//@RequestMapping("/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationController {
     AuthenticationService authenticationService;
-    OtpService otpService;
 
     @PostMapping("/login")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
@@ -51,20 +48,12 @@ public class AuthenticationController {
                 .build();
 
     }
-
-    @PostMapping("/verify")
-    ApiResponse<String> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
-        otpService.verifyOtp(request.getEmail(), request.getCode());
-        return ApiResponse.<String>builder()
-                .result("Email verified successfully")
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request) throws ParseException,JOSEException{
+        var result = authenticationService.refreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(result)
                 .build();
-    }
 
-    @PostMapping("/resend-code")
-    ApiResponse<String> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
-        otpService.resendOtp(request.getEmail());
-        return ApiResponse.<String>builder()
-                .result("Verification code sent successfully")
-                .build();
     }
 }

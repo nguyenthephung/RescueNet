@@ -39,8 +39,7 @@ public class RoleService {
         return  roleRepository.findAllWithPermissions().stream().map(roleMapper::toRoleResponse).toList();
     }
 
-    public void delete(String roleName){
-        // Delete role by name (role id is Long). Find by name first then delete entity if exists.
-        roleRepository.findByName(roleName).ifPresent(roleRepository::delete);
+    public void delete(String role){
+        roleRepository.deleteById(role);
     }
 }
