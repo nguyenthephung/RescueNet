@@ -64,15 +64,22 @@ public class UserService {
     public UserResponse addUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
-        HashSet<String> roles = new HashSet<>();
+
         // Check if email already exists
         if(userRepository.existsByEmail(request.getEmail()))
             throw new AppException(ErrorCode.USER_EXISTED);
-        
+
         // Set user as pending verification
         user.setStatus("pending");
         user.setEmailVerified(false);
-        
+
+        // Assign default role = CITIZEN for all self-registered users
+        var citizenRole = roleRepository.findByName("CITIZEN")
+                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+        var rolesSet = new HashSet<com.example.demo.model.Role>();
+        rolesSet.add(citizenRole);
+        user.setRoles(rolesSet);
+
         user = userRepository.save(user);
 
         // Generate and send OTP
