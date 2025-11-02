@@ -11,8 +11,11 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,5 +41,12 @@ public class UserProfileService {
                         () -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return userProfileMapper.toProfileUserResponse(userProfile);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ProfileUserResponse> getAllProfiles() {
+        var Profiles =
+                userProfileRepository.findAll();
+
+        return Profiles.stream().map(userProfileMapper::toProfileUserResponse).toList();
     }
 }

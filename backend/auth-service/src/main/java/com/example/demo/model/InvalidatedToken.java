@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import java.util.Date;
 
 @Entity
-@Table(name = "permissions")
 @Getter
 @Setter
 @NoArgsConstructor

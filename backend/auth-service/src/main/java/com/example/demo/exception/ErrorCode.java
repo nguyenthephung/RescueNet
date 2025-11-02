@@ -15,6 +15,7 @@ public enum ErrorCode {
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
+
     
     // OTP related errors
     INVALID_OTP(1009, "Invalid verification code", HttpStatus.BAD_REQUEST),
@@ -23,6 +24,7 @@ public enum ErrorCode {
     OTP_RESEND_TOO_SOON(1012, "Please wait before requesting a new code", HttpStatus.TOO_MANY_REQUESTS),
     USER_ALREADY_VERIFIED(1013, "User is already verified", HttpStatus.BAD_REQUEST),
     SEND_EMAIL_FAILED(1014, "Failed to send verification email", HttpStatus.INTERNAL_SERVER_ERROR),
+
             ;
     ErrorCode(int code, String message, HttpStatusCode statusCode){
         this.code = code;

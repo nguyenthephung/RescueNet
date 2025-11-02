@@ -75,7 +75,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
 
     console.log('Sending registration request:', backendRequest);
 
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/auth/users/register`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

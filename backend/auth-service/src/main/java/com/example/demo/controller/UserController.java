@@ -19,6 +19,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/users")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
 public class UserController {
