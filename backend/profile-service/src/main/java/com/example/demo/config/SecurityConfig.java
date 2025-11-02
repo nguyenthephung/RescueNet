@@ -23,7 +23,13 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final String[] PUBLIC_ENDPOINTS  = {};
+    private final String[] PUBLIC_ENDPOINTS  = {"/profile/internal/**",
+            "/users/register",
+            "/auth/login",
+            "/auth/logout",
+            "/auth/introspect",
+            "/auth/verify",
+            "/auth/resend-code"};
     @Value("${jwt.signerKey}")
     private String singerKey;
     @Bean

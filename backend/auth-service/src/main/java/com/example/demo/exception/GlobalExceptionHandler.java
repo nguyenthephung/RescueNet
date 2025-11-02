@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.nio.file.AccessDeniedException;
 import java.util.Map;
@@ -23,7 +24,15 @@ public class GlobalExceptionHandler {
     private static final String MIN_ATTRIBUTE = "min";
 
     @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception){
+    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception, HttpServletRequest request){
+        // Log essential request + exception info for debugging
+        try {
+            log.error("Unhandled RuntimeException for request {} {} from {}. params={}",
+                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), request.getParameterMap(), exception);
+        } catch (Exception e) {
+            log.error("Error while logging RuntimeException: {}", e.getMessage(), e);
+        }
+
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
@@ -31,7 +40,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(apiResponse);
     }
     @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingAppException(AppException exception) {
+    ResponseEntity<ApiResponse> handlingAppException(AppException exception, HttpServletRequest request) {
+        // Log AppException details and request context for debugging
+        try {
+            log.warn("AppException for request {} {} from {}. code={}, message={}",
+                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(),
+                    exception.getErrorCode() != null ? exception.getErrorCode().getCode() : "null",
+                    exception.getMessage(), exception);
+        } catch (Exception e) {
+            log.error("Error while logging AppException: {}", e.getMessage(), e);
+        }
+
         ErrorCode errorCode = exception.getErrorCode();
         ApiResponse apiResponse = new ApiResponse();
 
@@ -69,7 +88,8 @@ public class GlobalExceptionHandler {
             log.info(attributes.toString());
 
         } catch (IllegalArgumentException e) {
-
+            // enumKey not recognized, keep default INVALID_KEY and log for debugging
+            log.debug("Invalid enum key '{}' when mapping validation error. Falling back to INVALID_KEY.", enumKey, e);
         }
 
         ApiResponse apiResponse = new ApiResponse();

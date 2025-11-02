@@ -62,6 +62,8 @@ public class UserService {
         return response;
     }
     public UserResponse addUser(UserCreationRequest request) {
+        log.info("Creating user with email: {}", request.getEmail());
+        log.debug("addUser() request object: {}", request);
         User user = userMapper.toUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
 
@@ -74,24 +76,43 @@ public class UserService {
         user.setEmailVerified(false);
 
         // Assign default role = CITIZEN for all self-registered users
-        var citizenRole = roleRepository.findByName("CITIZEN")
-                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+        log.info("Looking up default role 'CITIZEN' from database");
+        com.example.demo.model.Role citizenRole = null;
+        try {
+            var opt = roleRepository.findByName("CITIZEN");
+            if (opt.isPresent()) {
+                citizenRole = opt.get();
+            } else {
+                log.warn("Default role 'CITIZEN' not found in DB. Creating default role.");
+                com.example.demo.model.Role newRole = com.example.demo.model.Role.builder()
+                        .name("CITIZEN")
+                        .description("Default role for self-registered users")
+                        .permissions(new HashSet<>())
+                        .build();
+                citizenRole = roleRepository.save(newRole);
+                log.info("Created default role 'CITIZEN' with id={}", citizenRole.getRoleId());
+            }
+        } catch (Exception e) {
+            log.error("Error while ensuring default role 'CITIZEN' exists for email={}", request.getEmail(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
         var rolesSet = new HashSet<com.example.demo.model.Role>();
         rolesSet.add(citizenRole);
         user.setRoles(rolesSet);
-
-        user = userRepository.save(user);
+        log.info("Assigned roles: {}", user.getRoles().toString());
+        try {
+            user = userRepository.save(user);
+        } catch (Exception e) {
+            log.error("Failed to save user to database. email={}", request.getEmail(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
 
         // Generate and send OTP
         String userName = user.getFullName() != null ? user.getFullName() : 
                          (user.getFirstName() + " " + user.getLastName());
         otpService.generateAndSendOtp(user.getEmail(), userName);
 
-        // TODO: Integrate with Profile Service when ready
-        // Profile Service integration is temporarily disabled
-        // var profileRequest = profileMapper.toProfileCreationRequest(request);
-        // var profildeResponse = profileClient.createProfile((profileRequest));
-        // log.info((profildeResponse.toString()));
+    // Profile Service integration is disabled for now.
         
         log.info("User created successfully, OTP sent to: {}", user.getEmail());
         return userMapper.toUserResponse(user);

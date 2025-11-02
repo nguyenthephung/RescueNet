@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +41,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<UserResponse> addUser(@RequestBody @Valid UserCreationRequest request) {
+    public ApiResponse<UserResponse> addUser(@RequestBody @Valid UserCreationRequest request, HttpServletRequest httpRequest) {
+        log.info("Register endpoint called from {} {} - remoteAddr={}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getRemoteAddr());
+        log.debug("Register request payload: {}", request);
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.addUser(request));
         return apiResponse;

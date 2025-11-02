@@ -75,7 +75,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
 
     console.log('Sending registration request:', backendRequest);
 
-    const response = await fetch(`${API_BASE_URL}/auth/users/register`, {
+    const response = await fetch(`${API_BASE_URL}/identity/users/register`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
  */
 export async function verifyEmail(data: VerificationData): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+    const response = await fetch(`${API_BASE_URL}/identity/auth/verify`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
