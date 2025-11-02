@@ -20,6 +20,7 @@ interface RoleOption {
   gradient: string;
 }
 
+// Only CITIZEN is allowed to self-register. Other roles are admin-assigned.
 const roleOptions: RoleOption[] = [
   {
     role: 'citizen',
@@ -28,22 +29,6 @@ const roleOptions: RoleOption[] = [
     descKey: 'auth.citizenDesc',
     color: 'bg-secondary-600',
     gradient: 'from-secondary-500 to-secondary-700',
-  },
-  {
-    role: 'volunteer',
-    imagePath: '/images/roles/volunteer.png',
-    titleKey: 'auth.volunteer',
-    descKey: 'auth.volunteerDesc',
-    color: 'bg-success-600',
-    gradient: 'from-success-500 to-success-700',
-  },
-  {
-    role: 'staff',
-    imagePath: '/images/roles/staff.png',
-    titleKey: 'auth.staff',
-    descKey: 'auth.staffDesc',
-    color: 'bg-primary-600',
-    gradient: 'from-primary-500 to-primary-700',
   },
 ];
 
@@ -72,7 +57,7 @@ export default function RegisterSelectPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6 justify-items-center">
           {roleOptions.map((option, index) => (
             <motion.div
               key={option.role}
@@ -87,7 +72,7 @@ export default function RegisterSelectPage() {
               <Card className={`
                 relative overflow-hidden transition-all duration-300 h-full flex flex-col
                 ${selectedRole === option.role ? 'ring-4 ring-primary-500' : ''}
-                hover:shadow-xl group
+                hover:shadow-xl group max-w-md w-full
               `}>
                 {/* Image Section */}
                 <div className={`relative h-48 bg-linear-to-br ${option.gradient} overflow-hidden shrink-0`}>

@@ -65,7 +65,11 @@ export const registerAsync = createAsyncThunk(
         throw new Error(response.message || 'Registration failed');
       }
 
-      return { requiresVerification: response.requiresVerification || false };
+      return { 
+        success: true,
+        requiresVerification: response.requiresVerification || false,
+        message: response.message 
+      };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Registration failed');
     }
@@ -79,15 +83,16 @@ export const verifyEmailAsync = createAsyncThunk(
     try {
       const response = await authApi.verifyEmail(data);
       
-      if (!response.success || !response.user || !response.token) {
+      if (!response.success) {
         throw new Error(response.message || 'Verification failed');
       }
 
-      // Save to localStorage after successful verification
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('auth_user', JSON.stringify(response.user));
-
-      return { user: response.user, token: response.token };
+      // After verification, user needs to login
+      // Don't save to localStorage here
+      return { 
+        success: true,
+        message: response.message 
+      };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Verification failed');
     }
@@ -206,12 +211,10 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(verifyEmailAsync.fulfilled, (state, action) => {
+      .addCase(verifyEmailAsync.fulfilled, (state) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
         state.error = null;
+        // Don't set user/token here - user needs to login after verification
       })
       .addCase(verifyEmailAsync.rejected, (state, action) => {
         state.isLoading = false;

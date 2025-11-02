@@ -102,11 +102,11 @@ function VerifyContent() {
     
     try {
       await verifyEmail({ email, code: codeToVerify });
-      setSuccess(t('auth.accountCreated'));
+      setSuccess('Email verified successfully! Redirecting to login...');
       
-      // Redirect to dashboard after 1.5s
+      // Redirect to login after 1.5s
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/auth/login?verified=true');
       }, 1500);
     } catch (err: any) {
       setError(err.message || t('auth.invalidCode'));
