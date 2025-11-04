@@ -1,5 +1,7 @@
 package service;
 
+import exception.AppException;
+import exception.ErrorCode;
 import model.RescueAssignment;
 import model.UserLocation;
 import repository.RedisAssignmentRepository;
@@ -62,7 +64,7 @@ public class RescueTeamService {
                 session.sendMessage(new TextMessage(json));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
 

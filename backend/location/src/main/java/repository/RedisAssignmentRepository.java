@@ -1,5 +1,7 @@
 package repository;
 
+import exception.AppException;
+import exception.ErrorCode;
 import model.RescueAssignment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ public class RedisAssignmentRepository {
             String json = mapper.writeValueAsString(assignment);
             redisTemplate.opsForValue().set(ASSIGN_KEY_PREFIX + assignment.getUserId(), json);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
 
@@ -30,7 +32,7 @@ public class RedisAssignmentRepository {
             if (json == null) return null;
             return mapper.readValue(json, RescueAssignment.class);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
 

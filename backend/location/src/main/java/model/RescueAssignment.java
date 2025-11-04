@@ -31,4 +31,8 @@ public class RescueAssignment {
         this.rescueTeamId = teamId;
         this.assignedAt = assignedAt;
     }
+
+    public Object getTeamId() {
+        return rescueTeamId;
+    }
 }
