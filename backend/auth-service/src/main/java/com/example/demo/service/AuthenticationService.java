@@ -70,17 +70,29 @@ public class AuthenticationService {
     }
 
     public  AuthenticationResponse authentication( AuthenticationRequest request ){
-        log.info(request.getFullName());
+        log.info("Login attempt for: {}", request.getFullName());
+        
+        // Try to find user by email first, then by fullName for backward compatibility
         var user = userRepository
-                .findByFullNameWithRoles(request.getFullName())
+                .findByEmailWithRoles(request.getFullName())
+                .or(() -> userRepository.findByFullNameWithRoles(request.getFullName()))
                 .orElseThrow(()-> new AppException(ErrorCode.USER_NOT_EXISTED));
-        log.info("user: {}", user);
-        log.info("User password hash: {}", user.getPasswordHash());
+        
+        log.info("User found: {}", user.getEmail());
+        log.info("User password hash exists: {}", user.getPasswordHash() != null);
 
         boolean authenticated = passwordEncoder.matches(request.getPasswordHash(),user.getPasswordHash());
         if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        
         var token = generateToken(user);
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
+        var refreshToken = generateRefreshToken(user); // Generate refresh token with longer expiration
+        
+        return AuthenticationResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .expiresIn(VALID_DURATION)
+                .authenticated(true)
+                .build();
     }
     public void logout(LogoutRequest request)  throws JOSEException,ParseException{
         try {
@@ -129,6 +141,28 @@ public class AuthenticationService {
             throw new RuntimeException(e);
         }
     }
+
+    private String generateRefreshToken(User user){
+        JWSHeader header =  new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getFullName())
+                .issuer("SecureNet.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.DAYS).toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("scope", buildScope(user))
+                .claim("tokenType", "refresh") // Đánh dấu đây là refresh token
+                .build();
+        SignedJWT signedJWT = new SignedJWT(header, jwtClaimsSet);
+        try {
+            signedJWT.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return signedJWT.serialize();
+        } catch (JOSEException e) {
+            log.error("Cannot create refresh token", e);
+            throw new RuntimeException(e);
+        }
+    }
     public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
         var signedJWT = verifyToken(request.getToken(), true);
 
@@ -142,12 +176,21 @@ public class AuthenticationService {
 
         var username = signedJWT.getJWTClaimsSet().getSubject();
 
-        var user =
-                userRepository.findByFullNameWithRoles(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        // Try to find user by email first, then by fullName (username in token can be either)
+        var user = userRepository
+                .findByEmailWithRoles(username)
+                .or(() -> userRepository.findByFullNameWithRoles(username))
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         var token = generateToken(user);
+        var newRefreshToken = generateRefreshToken(user); // Generate new refresh token
 
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
+        return AuthenticationResponse.builder()
+                .token(token)
+                .refreshToken(newRefreshToken)
+                .expiresIn(VALID_DURATION)
+                .authenticated(true)
+                .build();
     }
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());

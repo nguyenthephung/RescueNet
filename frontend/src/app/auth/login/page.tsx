@@ -55,15 +55,8 @@ export default function LoginPage() {
         password: formData.password,
       }, formData.rememberMe);
 
-      // Role-based redirect
-      const redirects = {
-        admin: '/admin',
-        staff: '/staff',
-        volunteer: '/volunteer',
-        citizen: '/dashboard',
-      };
-
-      router.push(redirects[user.role] || '/dashboard');
+      // Redirect to emergency page after successful login
+      router.push('/emergency');
     } catch (err: any) {
       setError(err.message || t('auth.invalidCredentials'));
     }

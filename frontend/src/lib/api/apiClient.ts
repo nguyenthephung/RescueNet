@@ -77,7 +77,13 @@ const processQueue = (error: any = null) => {
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // Skip token check for public endpoints
-    const publicEndpoints = ['/auth/login', '/auth/register', '/auth/verify', '/auth/resend-code', '/auth/refresh'];
+    const publicEndpoints = [
+      '/identity/auth/login', 
+      '/identity/users/register', 
+      '/identity/auth/verify', 
+      '/identity/auth/resend-code', 
+      '/identity/auth/refresh'
+    ];
     const isPublicEndpoint = publicEndpoints.some((endpoint) => config.url?.includes(endpoint));
 
     if (isPublicEndpoint) {
@@ -120,8 +126,8 @@ apiClient.interceptors.request.use(
       try {
         // Refresh the token
         const response = await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
-          { refreshToken },
+          `${API_BASE_URL}/identity/auth/refresh`,
+          { token: refreshToken },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -188,8 +194,8 @@ apiClient.interceptors.response.use(
 
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
-          { refreshToken },
+          `${API_BASE_URL}/identity/auth/refresh`,
+          { token: refreshToken },
           {
             headers: {
               'Content-Type': 'application/json',

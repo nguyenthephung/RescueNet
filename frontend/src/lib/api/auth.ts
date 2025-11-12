@@ -14,7 +14,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8888/a
  */
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    const response = await apiClient.post('/auth/login', {
+    const response = await apiClient.post('/identity/auth/login', {
       fullName: credentials.email, // Backend expects 'fullName' field
       passwordHash: credentials.password
     });
@@ -30,27 +30,47 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
         data.result.expiresIn
       );
       
+      // Fetch actual user info after successful login
+      let user: User;
+      try {
+        user = await getMyInfo();
+      } catch (error) {
+        // Fallback to basic user info if getMyInfo fails
+        console.warn('Failed to fetch user info, using fallback:', error);
+        user = {
+          id: 'temp',
+          email: credentials.email,
+          name: credentials.email.split('@')[0],
+          fullName: credentials.email,
+          role: 'citizen',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      
       // Return in expected format
       return {
         success: true,
         token: data.result.token,
         refreshToken: data.result.refreshToken,
+        expiresIn: data.result.expiresIn,
         message: data.message || 'Login successful',
-        user: {
-          id: 'temp', // Will be fetched from token introspection
-          email: credentials.email,
-          name: credentials.email.split('@')[0],
-          role: 'citizen', // Default role, will be updated after introspection
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
+        user
       };
     }
 
     throw new Error('Invalid response from server');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
-    throw new Error(error.response?.data?.message || error.message || 'Login failed');
+    
+    // Handle backend error response structure
+    const axiosError = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
+    const errorMessage = axiosError.response?.data?.message 
+      || axiosError.response?.data?.error 
+      || axiosError.message 
+      || 'Login failed';
+    
+    throw new Error(errorMessage);
   }
 }
 
@@ -157,7 +177,7 @@ export async function verifyEmail(data: VerificationData): Promise<AuthResponse>
  */
 export async function resendVerificationCode(email: string): Promise<{ success: boolean; message: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/resend-code`, {
+    const response = await fetch(`${API_BASE_URL}/identity/auth/resend-code`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -192,7 +212,7 @@ export async function logout(): Promise<void> {
     const token = localStorage.getItem('auth_token');
     
     if (token) {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
+      await fetch(`${API_BASE_URL}/identity/auth/logout`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -206,17 +226,51 @@ export async function logout(): Promise<void> {
     console.error('Logout error:', error);
   } finally {
     // Clear local storage regardless of API call result
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    tokenManager.clearTokens();
+  }
+}
+
+/**
+ * Get current user info from backend
+ */
+export async function getMyInfo(): Promise<User> {
+  try {
+    const response = await apiClient.get('/identity/users/my-info');
+    
+    const data = response.data;
+    
+    // Backend returns: { code, message, result: UserResponse }
+    if (data.result) {
+      const userResponse = data.result;
+      
+      // Map backend UserResponse to frontend User type
+      const user: User = {
+        id: userResponse.userId?.toString() || '',
+        email: userResponse.email || '',
+        name: userResponse.fullName || '',
+        fullName: userResponse.fullName || '',
+        role: userResponse.roles?.[0]?.name?.toLowerCase() || 'citizen',
+        createdAt: userResponse.createdAt || new Date().toISOString(),
+        updatedAt: userResponse.createdAt || new Date().toISOString(),
+      };
+      
+      return user;
+    }
+    
+    throw new Error('Invalid response from server');
+  } catch (error: unknown) {
+    console.error('Get my info error:', error);
+    throw error;
   }
 }
 
 /**
  * Get current user from token
+ * @deprecated Use getMyInfo() instead for up-to-date user information
  */
 export async function getCurrentUser(token: string): Promise<User> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/introspect`, {
+    const response = await fetch(`${API_BASE_URL}/identity/auth/introspect`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -234,11 +288,8 @@ export async function getCurrentUser(token: string): Promise<User> {
     
     // Backend returns introspection result
     if (data.result && data.result.valid) {
-      // Get user info from stored data or token claims
-      const user = localStorage.getItem('auth_user');
-      if (user) {
-        return JSON.parse(user);
-      }
+      // Use getMyInfo instead for full user data
+      return getMyInfo();
     }
     
     throw new Error('Invalid token');
