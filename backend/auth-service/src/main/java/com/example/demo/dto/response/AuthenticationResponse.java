@@ -14,4 +14,5 @@ public class AuthenticationResponse {
     String refreshToken;
     Long expiresIn;
     boolean authenticated;
+
 }

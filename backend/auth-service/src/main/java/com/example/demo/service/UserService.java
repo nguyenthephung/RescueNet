@@ -39,6 +39,7 @@ public class UserService {
     ProfileMapper profileMapper;
     RoleRepository roleRepository;
     OtpService otpService;
+    UserEventPublisher userEventPublisher;
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         log.info("In method get Users");
@@ -112,7 +113,15 @@ public class UserService {
                          (user.getFirstName() + " " + user.getLastName());
         otpService.generateAndSendOtp(user.getEmail(), userName);
 
-    // Profile Service integration is disabled for now.
+        // Publish user registered event to Kafka
+        try {
+            userEventPublisher.publishUserRegisteredEvent(user);
+            log.info("Published UserRegisteredEvent for user: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to publish UserRegisteredEvent for user: {}", user.getEmail(), e);
+            // Don't fail the registration if event publishing fails
+            // The profile can be created later through retry or manual process
+        }
         
         log.info("User created successfully, OTP sent to: {}", user.getEmail());
         return userMapper.toUserResponse(user);

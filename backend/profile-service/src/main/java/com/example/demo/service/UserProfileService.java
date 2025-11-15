@@ -35,6 +35,30 @@ public class UserProfileService {
         log.info("Saved profile with id: {}", userProfile.getId());
         return userProfileMapper.toProfileUserResponse(userProfile);
     }
+
+    /**
+     * Create user profile from Kafka event
+     * This is called when UserRegisteredEvent is received from auth-service
+     */
+    public ProfileUserResponse createProfileFromEvent(ProfileCreationRequest request, String correlationId) {
+        log.info("Creating profile from event with correlationId: {}, userId: {}", 
+                correlationId, request.getUserId());
+        
+        // Check if profile already exists to avoid duplicates
+        if (userProfileRepository.existsById(request.getUserId())) {
+            log.warn("Profile already exists for userId: {}, skipping creation", request.getUserId());
+            return getProfile(request.getUserId());
+        }
+        
+        ProfileUser userProfile = userProfileMapper.toProfileUser(request);
+        userProfile = userProfileRepository.save(userProfile);
+        
+        log.info("Successfully created profile from event: userId={}, correlationId={}", 
+                userProfile.getId(), correlationId);
+        
+        return userProfileMapper.toProfileUserResponse(userProfile);
+    }
+
     public ProfileUserResponse getProfile(String id) {
         ProfileUser userProfile =
                 userProfileRepository.findById(id).orElseThrow(
