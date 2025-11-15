@@ -100,6 +100,19 @@
         <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
     </dependency>
 
+    <!-- Kafka -->
+    <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+    </dependency>
+
+    <!-- Common Events -->
+    <dependency>
+        <groupId>com.rescuenet</groupId>
+        <artifactId>common-events</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -129,6 +142,8 @@
                             <version>${org.mapstruct.version}</version>
                         </path>
 					</annotationProcessorPaths>
+					<!-- Enable incremental compilation -->
+					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -141,6 +156,8 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<!-- Enable automatic restart when classpath changes -->
+					<addResources>true</addResources>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -1,8 +1,9 @@
 {
-  "files.autoSave": "afterDelay",
+  "java.compile.nullAnalysis.mode": "automatic",
   "java.compile.onSave.enabled": true,
   "java.configuration.onSave": {
-    "action": "autoBuild"
+    "action": "compile"
   },
-  "spring-boot.ls.java.ls.server.vmargs": "-Dspring.devtools.restart.enabled=true"
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
 }
