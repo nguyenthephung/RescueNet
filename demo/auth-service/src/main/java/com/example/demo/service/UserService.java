@@ -1,0 +1,142 @@
+package com.example.demo.service;
+
+import com.example.demo.dto.request.ApiResponse;
+import com.example.demo.dto.request.UserCreationRequest;
+import com.example.demo.dto.request.UserUpdateRequest;
+import com.example.demo.dto.response.UserResponse;
+import com.example.demo.enums.Role;
+import com.example.demo.exception.AppException;
+import com.example.demo.exception.ErrorCode;
+import com.example.demo.mapper.ProfileMapper;
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.User;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.httpclient.ProfileClient;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.HashSet;
+import java.util.List;
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
+public class UserService {
+    UserRepository userRepository;
+    UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
+    ProfileClient profileClient;
+    ProfileMapper profileMapper;
+    RoleRepository roleRepository;
+    OtpService otpService;
+//    OtpService otpService;
+    UserEventPublisher userEventPublisher;
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserResponse> getUsers() {
+        log.info("In method get Users");
+        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+    }
+    @PostAuthorize("returnObject.fullName == authentication.name")
+    public  UserResponse updateUser(Long userId,UserUpdateRequest request){
+        User user = getUser(userId);
+        userMapper.updateUser(user, request);
+        user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
+        log.info("Requested roles: {}", request.getRoles());
+        var roles = roleRepository.findByNameInWithPermissions(request.getRoles());
+        roles.forEach(role -> role.getPermissions().size());
+        log.info("list roles: {}",roles.toString());
+        user.setRoles(new HashSet<>(roles));
+        UserResponse response = userMapper.toUserResponse(user);
+
+        // Lưu user
+        userRepository.save(user);
+
+        return response;
+    }
+    public UserResponse addUser(UserCreationRequest request) {
+        log.info("Creating user with email: {}", request.getEmail());
+        log.debug("addUser() request object: {}", request);
+        User user = userMapper.toUser(request);
+        user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
+
+        // Check if email already exists
+        if(userRepository.existsByEmail(request.getEmail()))
+            throw new AppException(ErrorCode.USER_EXISTED);
+
+        // Set user as pending verification
+        user.setStatus("pending");
+        user.setEmailVerified(false);
+
+        // Assign default role = CITIZEN for all self-registered users
+        log.info("Looking up default role 'CITIZEN' from database");
+        com.example.demo.model.Role citizenRole = null;
+        try {
+            var opt = roleRepository.findByName("CITIZEN");
+            if (opt.isPresent()) {
+                citizenRole = opt.get();
+            } else {
+                log.warn("Default role 'CITIZEN' not found in DB. Creating default role.");
+                com.example.demo.model.Role newRole = com.example.demo.model.Role.builder()
+                        .name("CITIZEN")
+                        .description("Default role for self-registered users")
+                        .permissions(new HashSet<>())
+                        .build();
+                citizenRole = roleRepository.save(newRole);
+                log.info("Created default role 'CITIZEN' with id={}", citizenRole.getRoleId());
+            }
+        } catch (Exception e) {
+            log.error("Error while ensuring default role 'CITIZEN' exists for email={}", request.getEmail(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+        var rolesSet = new HashSet<com.example.demo.model.Role>();
+        rolesSet.add(citizenRole);
+        user.setRoles(rolesSet);
+        log.info("Assigned roles: {}", user.getRoles().toString());
+        try {
+            user = userRepository.save(user);
+        } catch (Exception e) {
+            log.error("Failed to save user to database. email={}", request.getEmail(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+        // Generate and send OTP
+        String userName = user.getFullName() != null ? user.getFullName() :
+                (user.getFirstName() + " " + user.getLastName());
+        otpService.generateAndSendOtp(user.getEmail(), userName);
+
+        // Publish user registered event to Kafka
+        try {
+            userEventPublisher.publishUserRegisteredEvent(user);
+            log.info("Published UserRegisteredEvent for user: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to publish UserRegisteredEvent for user: {}", user.getEmail(), e);
+            // Don't fail the registration if event publishing fails
+            // The profile can be created later through retry or manual process
+        }
+
+        log.info("User created successfully, OTP sent to: {}", user.getEmail());
+        return userMapper.toUserResponse(user);
+    }
+    public UserResponse getMyInfo (){
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        User user = userRepository.findByFullNameWithRoles(name).orElseThrow(()->new AppException(ErrorCode.USER_EXISTED));
+        return userMapper.toUserResponse(user);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
+}

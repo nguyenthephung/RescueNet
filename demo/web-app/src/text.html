@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Notification Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+  <h2>WebSocket Notification Test</h2>
+  <div id="log"></div>
+
+  <script>
+    // Lấy userId từ query string: http://localhost:8083/notification-test.html?userId=41
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("userId");
+
+    function logMessage(msg) {
+      const logDiv = document.getElementById("log");
+      const p = document.createElement("p");
+      p.innerText = msg;
+      logDiv.appendChild(p);
+      console.log(msg);
+    }
+
+    if (userId) {
+      logMessage("🔑 UserId được truyền: " + userId);
+
+      const socket = new SockJS('http://localhost:8083/ws');
+      const stompClient = Stomp.over(socket);
+
+      logMessage("📡 Đang mở kết nối WebSocket tới backend...");
+
+      stompClient.connect({}, function(frame) {
+        logMessage("✅ Kết nối thành công tới backend: " + frame);
+
+        const destination = `/topic/notifications/${userId}`;
+        logMessage("📌 Đang subscribe vào channel: " + destination);
+
+        stompClient.subscribe(destination, function(message) {
+          logMessage("📥 Nhận được dữ liệu từ backend:");
+          logMessage("Raw message: " + message.body);
+
+          try {
+            const notif = JSON.parse(message.body);
+            logMessage("🎉 Parsed notification: title=" + notif.title + ", message=" + notif.message);
+            alert(`Notification: ${notif.title}\n${notif.message}`);
+          } catch (e) {
+            logMessage("⚠️ Lỗi parse JSON: " + e);
+          }
+        });
+      }, function(error) {
+        logMessage("❌ Lỗi kết nối tới backend: " + error);
+      });
+
+    } else {
+      logMessage("⚠️ Không có userId → không subscribe → không nhận message");
+    }
+  </script>
+</body>
+</html>
